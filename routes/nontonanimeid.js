@@ -20,8 +20,9 @@ const userAgentList = [
 var options = {
   url: null,
   headers: {
-    'User-Agent': userAgentList[6]
-  }
+    'User-Agent': userAgentList[0]
+  },
+  validateStatus: () => true
 }
 
 router.get('/recent', async (req, res) => {
