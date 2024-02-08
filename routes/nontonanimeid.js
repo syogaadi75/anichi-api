@@ -17,9 +17,7 @@ const userAgentList = [
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15'
 ]
 
-function getRandomUserAgent() {
-  return userAgentList[Math.floor(Math.random() * userAgentList.length)]
-}
+const userAgent = userAgentList[0]
 
 router.get('/recent', async (req, res) => {
   try {
@@ -27,7 +25,7 @@ router.get('/recent', async (req, res) => {
     const options = {
       url: `${BASEURL}`,
       headers: {
-        'User-Agent': getRandomUserAgent() // Memilih user agent berikutnya dari daftar
+        'User-Agent': userAgent
       }
     }
     const base = await axios.request(options)
@@ -73,7 +71,7 @@ router.get('/list', async (req, res) => {
     const options = {
       url,
       headers: {
-        'User-Agent': getRandomUserAgent() // Memilih user agent berikutnya dari daftar
+        'User-Agent': userAgent
       }
     }
     const base = await axios.request(options)
