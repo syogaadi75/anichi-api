@@ -17,17 +17,17 @@ const userAgentList = [
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15'
 ]
 
-const userAgent = userAgentList[0]
+var options = {
+  url: null,
+  headers: {
+    'User-Agent': userAgentList[1]
+  }
+}
 
 router.get('/recent', async (req, res) => {
   try {
     let list = []
-    const options = {
-      url: `${BASEURL}`,
-      headers: {
-        'User-Agent': userAgent
-      }
-    }
+    options.url = `${BASEURL}`
     const base = await axios.request(options)
     const $ = cheerio.load(base.data)
     if (!$('#postbaru').html()) {
@@ -68,12 +68,7 @@ router.get('/list', async (req, res) => {
     let list = []
     const { page } = req.query
     const url = page.toString() === '1' ? `${BASEURL}/anime` : `${BASEURL}/anime/page/${page}`
-    const options = {
-      url,
-      headers: {
-        'User-Agent': userAgent
-      }
-    }
+    options.url = url
     const base = await axios.request(options)
     const $ = cheerio.load(base.data)
     if (!$('.result').html()) {
