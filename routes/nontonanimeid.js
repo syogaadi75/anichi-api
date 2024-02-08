@@ -2,7 +2,8 @@ const express = require('express')
 const axios = require('axios')
 const router = express.Router()
 const cheerio = require('cheerio')
-var rp = require('request-promise')
+var request = require('request')
+const zlib = require('zlib')
 
 const BASEURL = 'https://nontonanimeid.org'
 
@@ -40,48 +41,90 @@ var options = {
     'Upgrade-Insecure-Requests': '1',
     'User-Agent':
       'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Mobile Safari/537.36'
-  },
-  gzip: true
+  }
 }
 
-router.get('/recent', async (req, res) => {
-  try {
-    let list = []
-    options.url = `${BASEURL}`
-    const base = await axios.request(options)
-    const $ = cheerio.load(base.data)
-    if (!$('#postbaru').html()) {
-      throw new Error('Page not found')
-    }
-    $('#postbaru')
-      .first()
-      .find('.misha_posts_wrap article')
-      .each((i, el) => {
-        list.push({
-          slug: $(el)
-            .find('a')
-            .attr('href')
-            ?.split('/')[3]
-            .replace(/\b(?:-episode-[a-zA-Z0-9_]*)\b/gi, ''),
-          title: $(el).find('.entry-title').text(),
-          episode: ~~$(el).find('.episodes').text().replace(`"`, '').trim(),
-          cover: $(el).find('.limit img').attr('src')?.split('?')[0],
-          url: $(el)
-            .find('a')
-            .attr('href')
-            ?.replace(/\b(?:-episode-[a-zA-Z0-9_]*)\b/gi, '')
+router.get('/recent', (req, res) => {
+  //   try {
+  let list = []
+  options.url = `${BASEURL}`
+  fetch(options.url, {
+    headers: options.headers
+  })
+    .then(function (response) {
+      return response.text()
+    })
+    .then((html) => {
+      const $ = cheerio.load(html)
+      $('#postbaru')
+        .first()
+        .find('.misha_posts_wrap article')
+        .each((i, el) => {
+          list.push({
+            slug: $(el)
+              .find('a')
+              .attr('href')
+              ?.split('/')[3]
+              .replace(/\b(?:-episode-[a-zA-Z0-9_]*)\b/gi, ''),
+            title: $(el).find('.entry-title').text(),
+            episode: ~~$(el).find('.episodes').text().replace(`"`, '').trim(),
+            cover: $(el).find('.limit img').attr('src')?.split('?')[0],
+            url: $(el)
+              .find('a')
+              .attr('href')
+              ?.replace(/\b(?:-episode-[a-zA-Z0-9_]*)\b/gi, '')
+          })
         })
-      })
 
-    res.send({
-      list: list
+      res.send({
+        list: list
+      })
     })
-  } catch (error) {
-    res.send({
-      message: error
-    })
-  }
+  //   } catch (error) {
+  //     res.send({
+  //       message: error
+  //     })
+  //   }
 })
+
+// router.get('/recent', async (req, res) => {
+//   try {
+//     let list = []
+//     options.url = `${BASEURL}`
+//     const base = await axios.request(options)
+//     const $ = cheerio.load(base.data)
+//     if (!$('#postbaru').html()) {
+//       throw new Error('Page not found')
+//     }
+//     $('#postbaru')
+//       .first()
+//       .find('.misha_posts_wrap article')
+//       .each((i, el) => {
+//         list.push({
+//           slug: $(el)
+//             .find('a')
+//             .attr('href')
+//             ?.split('/')[3]
+//             .replace(/\b(?:-episode-[a-zA-Z0-9_]*)\b/gi, ''),
+//           title: $(el).find('.entry-title').text(),
+//           episode: ~~$(el).find('.episodes').text().replace(`"`, '').trim(),
+//           cover: $(el).find('.limit img').attr('src')?.split('?')[0],
+//           url: $(el)
+//             .find('a')
+//             .attr('href')
+//             ?.replace(/\b(?:-episode-[a-zA-Z0-9_]*)\b/gi, '')
+//         })
+//       })
+
+//     res.send({
+//       list: list
+//     })
+//   } catch (error) {
+//     res.send({
+//       message: error
+//     })
+//   }
+// })
 
 router.get('/list', async (req, res) => {
   try {
