@@ -17,14 +17,8 @@ const userAgentList = [
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15'
 ]
 
-// Indeks yang akan digunakan untuk memilih user agent berikutnya
-let currentIndex = 0
-
-// Fungsi untuk mendapatkan user agent berikutnya dari daftar
-function getNextUserAgent() {
-  const userAgent = userAgentList[currentIndex]
-  currentIndex = (currentIndex + 1) % userAgentList.length // Pindah ke user agent berikutnya
-  return userAgent
+function getRandomUserAgent() {
+  return userAgents[Math.floor(Math.random() * userAgents.length)]
 }
 
 router.get('/recent', async (req, res) => {
@@ -33,7 +27,7 @@ router.get('/recent', async (req, res) => {
     const options = {
       url: `${BASEURL}`,
       headers: {
-        'User-Agent': getNextUserAgent() // Memilih user agent berikutnya dari daftar
+        'User-Agent': getRandomUserAgent() // Memilih user agent berikutnya dari daftar
       }
     }
     const base = await axios.request(options)
@@ -79,7 +73,7 @@ router.get('/list', async (req, res) => {
     const options = {
       url,
       headers: {
-        'User-Agent': getNextUserAgent() // Memilih user agent berikutnya dari daftar
+        'User-Agent': getRandomUserAgent() // Memilih user agent berikutnya dari daftar
       }
     }
     const base = await axios.request(options)
