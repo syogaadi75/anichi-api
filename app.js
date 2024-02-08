@@ -10,7 +10,7 @@ app.use(cors())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded())
 
-app.use('/fserver', nontonanimeid)
+app.use('/nontonanimeid', nontonanimeid)
 app.get('/', (req, res) => {
   res.send('Selamat Datang!')
 })
