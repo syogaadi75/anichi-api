@@ -20,7 +20,7 @@ const userAgentList = [
 var options = {
   url: null,
   headers: {
-    'User-Agent': userAgentList[5]
+    'User-Agent': userAgentList[6]
   }
 }
 
