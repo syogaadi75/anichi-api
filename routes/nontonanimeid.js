@@ -28,6 +28,7 @@ router.get('/recent', (req, res) => {
   let list = []
   options.url = `${BASEURL}`
   axios.request(options).then((base) => {
+    res.send({ body: base.data })
     const $ = cheerio.load(base.data)
     if (!$('#postbaru').html()) {
       throw new Error('Page not found')
