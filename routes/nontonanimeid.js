@@ -18,7 +18,7 @@ const userAgentList = [
 ]
 
 function getRandomUserAgent() {
-  return userAgents[Math.floor(Math.random() * userAgents.length)]
+  return userAgentList[Math.floor(Math.random() * userAgentList.length)]
 }
 
 router.get('/recent', async (req, res) => {
