@@ -14,21 +14,22 @@ const userAgentList = [
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
   'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15'
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
 ]
 
 var options = {
   url: null,
   headers: {
-    'User-Agent': userAgentList[2]
+    'User-Agent': userAgentList[7]
   }
 }
 
-router.get('/recent', (req, res) => {
-  let list = []
-  options.url = `${BASEURL}`
-  axios.request(options).then((base) => {
-    res.send({ body: base.data })
+router.get('/recent', async (req, res) => {
+  try {
+    let list = []
+    options.url = `${BASEURL}`
+    const base = await axios.request(options)
     const $ = cheerio.load(base.data)
     if (!$('#postbaru').html()) {
       throw new Error('Page not found')
@@ -56,47 +57,12 @@ router.get('/recent', (req, res) => {
     res.send({
       list: list
     })
-  })
+  } catch (error) {
+    res.send({
+      message: error
+    })
+  }
 })
-// router.get('/recent', async (req, res) => {
-//   try {
-//     let list = []
-//     options.url = `${BASEURL}`
-//     const base = await axios.request(options)
-//     res.send({ body: base.data })
-//     const $ = cheerio.load(base.data)
-//     if (!$('#postbaru').html()) {
-//       throw new Error('Page not found')
-//     }
-//     $('#postbaru')
-//       .first()
-//       .find('.misha_posts_wrap article')
-//       .each((i, el) => {
-//         list.push({
-//           slug: $(el)
-//             .find('a')
-//             .attr('href')
-//             ?.split('/')[3]
-//             .replace(/\b(?:-episode-[a-zA-Z0-9_]*)\b/gi, ''),
-//           title: $(el).find('.entry-title').text(),
-//           episode: ~~$(el).find('.episodes').text().replace(`"`, '').trim(),
-//           cover: $(el).find('.limit img').attr('src')?.split('?')[0],
-//           url: $(el)
-//             .find('a')
-//             .attr('href')
-//             ?.replace(/\b(?:-episode-[a-zA-Z0-9_]*)\b/gi, '')
-//         })
-//       })
-
-//     res.send({
-//       list: list
-//     })
-//   } catch (error) {
-//     res.send({
-//       message: error
-//     })
-//   }
-// })
 
 router.get('/list', async (req, res) => {
   try {
