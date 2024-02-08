@@ -29,8 +29,6 @@ var options = {
     'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
     'Cache-Control': 'max-age=0',
     Priority: 'u=0, i',
-    Cookie:
-      '_gid=GA1.2.1132243309.1706598669; _ga_S0L4FL6T3J=GS1.1.1707390625.65.0.1707390625.0.0.0; _ga=GA1.2.755552039.1705300137; _gat_gtag_UA_79646797_8=1',
     'Sec-Ch-Ua': '"Not A(Brand";v="99", "Google Chrome";v="121", "Chromium";v="121"',
     'Sec-Ch-Ua-Mobile': '?1',
     'Sec-Ch-Ua-Platform': '"Android"',
