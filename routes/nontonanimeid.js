@@ -6,13 +6,20 @@ const cheerio = require('cheerio')
 const BASEURL = 'https://nontonanimeid.org'
 
 // axios.defaults.validateStatus = () => true
-axios.defaults.headers.common['User-Agent'] =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
+
+var options = {
+  url: null,
+  headers: {
+    'User-Agent':
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
+  }
+}
 
 router.get('/recent', async (req, res) => {
   try {
     let list = []
-    const base = await axios.get(`${BASEURL}`)
+    options.url = `${BASEURL}`
+    const base = await axios.request(options)
     const $ = cheerio.load(base.data)
     if (!$('#postbaru').html()) {
       throw new Error('Page not found')
