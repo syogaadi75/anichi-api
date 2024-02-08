@@ -7,7 +7,7 @@ const BASEURL = 'https://nontonanimeid.org'
 
 // axios.defaults.validateStatus = () => true
 axios.defaults.headers.common['User-Agent'] =
-  'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Mobile Safari/537.36'
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
 
 router.get('/recent', async (req, res) => {
   try {
