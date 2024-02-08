@@ -2,6 +2,7 @@ const express = require('express')
 const axios = require('axios')
 const router = express.Router()
 const cheerio = require('cheerio')
+var rp = require('request-promise')
 
 const BASEURL = 'https://nontonanimeid.org'
 
@@ -21,8 +22,24 @@ const userAgentList = [
 var options = {
   url: null,
   headers: {
-    'User-Agent': userAgentList[7]
-  }
+    Accept:
+      'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+    'Cache-Control': 'max-age=0',
+    Priority: 'u=0, i',
+    'Sec-Ch-Ua': '"Not A(Brand";v="99", "Google Chrome";v="121", "Chromium";v="121"',
+    'Sec-Ch-Ua-Mobile': '?1',
+    'Sec-Ch-Ua-Platform': '"Android"',
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'none',
+    'Sec-Fetch-User': '?1',
+    'Upgrade-Insecure-Requests': '1',
+    'User-Agent':
+      'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Mobile Safari/537.36'
+  },
+  gzip: true
 }
 
 router.get('/recent', async (req, res) => {
