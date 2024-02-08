@@ -24,12 +24,10 @@ var options = {
   }
 }
 
-router.get('/recent', async (req, res) => {
-  try {
-    let list = []
-    options.url = `${BASEURL}`
-    const base = await axios.request(options)
-    res.send({ body: base.data })
+router.get('/recent', (req, res) => {
+  let list = []
+  options.url = `${BASEURL}`
+  axios.request(options).then((base) => {
     const $ = cheerio.load(base.data)
     if (!$('#postbaru').html()) {
       throw new Error('Page not found')
@@ -57,12 +55,47 @@ router.get('/recent', async (req, res) => {
     res.send({
       list: list
     })
-  } catch (error) {
-    res.send({
-      message: error
-    })
-  }
+  })
 })
+// router.get('/recent', async (req, res) => {
+//   try {
+//     let list = []
+//     options.url = `${BASEURL}`
+//     const base = await axios.request(options)
+//     res.send({ body: base.data })
+//     const $ = cheerio.load(base.data)
+//     if (!$('#postbaru').html()) {
+//       throw new Error('Page not found')
+//     }
+//     $('#postbaru')
+//       .first()
+//       .find('.misha_posts_wrap article')
+//       .each((i, el) => {
+//         list.push({
+//           slug: $(el)
+//             .find('a')
+//             .attr('href')
+//             ?.split('/')[3]
+//             .replace(/\b(?:-episode-[a-zA-Z0-9_]*)\b/gi, ''),
+//           title: $(el).find('.entry-title').text(),
+//           episode: ~~$(el).find('.episodes').text().replace(`"`, '').trim(),
+//           cover: $(el).find('.limit img').attr('src')?.split('?')[0],
+//           url: $(el)
+//             .find('a')
+//             .attr('href')
+//             ?.replace(/\b(?:-episode-[a-zA-Z0-9_]*)\b/gi, '')
+//         })
+//       })
+
+//     res.send({
+//       list: list
+//     })
+//   } catch (error) {
+//     res.send({
+//       message: error
+//     })
+//   }
+// })
 
 router.get('/list', async (req, res) => {
   try {
