@@ -7,18 +7,35 @@ const BASEURL = 'https://nontonanimeid.org'
 
 // axios.defaults.validateStatus = () => true
 
-var options = {
-  url: null,
-  headers: {
-    'User-Agent':
-      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
-  }
+const userAgentList = [
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15'
+]
+
+// Indeks yang akan digunakan untuk memilih user agent berikutnya
+let currentIndex = 0
+
+// Fungsi untuk mendapatkan user agent berikutnya dari daftar
+function getNextUserAgent() {
+  const userAgent = userAgentList[currentIndex]
+  currentIndex = (currentIndex + 1) % userAgentList.length // Pindah ke user agent berikutnya
+  return userAgent
 }
 
 router.get('/recent', async (req, res) => {
   try {
     let list = []
-    options.url = `${BASEURL}`
+    const options = {
+      url: `${BASEURL}`,
+      headers: {
+        'User-Agent': getNextUserAgent() // Memilih user agent berikutnya dari daftar
+      }
+    }
     const base = await axios.request(options)
     const $ = cheerio.load(base.data)
     if (!$('#postbaru').html()) {
@@ -59,7 +76,12 @@ router.get('/list', async (req, res) => {
     let list = []
     const { page } = req.query
     const url = page.toString() === '1' ? `${BASEURL}/anime` : `${BASEURL}/anime/page/${page}`
-    options.url = url
+    const options = {
+      url,
+      headers: {
+        'User-Agent': getNextUserAgent() // Memilih user agent berikutnya dari daftar
+      }
+    }
     const base = await axios.request(options)
     const $ = cheerio.load(base.data)
     if (!$('.result').html()) {
