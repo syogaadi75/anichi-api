@@ -5,6 +5,10 @@ const cheerio = require('cheerio')
 
 const BASEURL = 'https://nontonanimeid.org'
 
+axios.defaults.validateStatus = () => true
+// axios.defaults.headers.common['User-Agent'] =
+//   'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Mobile Safari/537.36'
+
 router.get('/recent', async (req, res) => {
   try {
     let list = []
