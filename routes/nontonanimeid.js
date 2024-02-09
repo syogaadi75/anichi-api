@@ -6,7 +6,7 @@ var request = require('request')
 const zlib = require('zlib')
 const jsdom = require('jsdom')
 
-const BASEURL = 'https://nontonanimeid.org'
+const BASEURL = 'https://tv1.ichinime.net'
 
 // axios.defaults.validateStatus = () => true
 
@@ -25,24 +25,8 @@ var options = {
   url: null,
   withCredentials: true,
   headers: {
-    Accept:
-      'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-    'Accept-Encoding': 'gzip, deflate, br',
-    'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
-    'Cache-Control': 'max-age=0',
-    Priority: 'u=0, i',
-    Cookie:
-      '_gid=GA1.2.1132243309.1706598669; _ga_S0L4FL6T3J=GS1.1.1707390625.65.0.1707390625.0.0.0; _ga=GA1.2.755552039.1705300137; _gat_gtag_UA_79646797_8=1',
-    'Sec-Ch-Ua': '"Not A(Brand";v="99", "Google Chrome";v="121", "Chromium";v="121"',
-    'Sec-Ch-Ua-Mobile': '?1',
-    'Sec-Ch-Ua-Platform': '"Android"',
-    'Sec-Fetch-Dest': 'document',
-    'Sec-Fetch-Mode': 'navigate',
-    'Sec-Fetch-Site': 'none',
-    'Sec-Fetch-User': '?1',
-    'Upgrade-Insecure-Requests': '1',
     'User-Agent':
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
+      'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Mobile Safari/537.36'
   }
 }
 
@@ -52,12 +36,12 @@ router.get('/recent', async (req, res) => {
     options.url = `${BASEURL}`
     const base = await axios.request(options)
     const $ = cheerio.load(base.data)
-    if (!$('#postbaru').html()) {
+    if (!$('.listupd').html()) {
       throw new Error('Page not found')
     }
-    $('#postbaru')
+    $('.listupd')
       .first()
-      .find('.misha_posts_wrap article')
+      .find('.excstf article')
       .each((i, el) => {
         list.push({
           slug: $(el)
@@ -65,9 +49,9 @@ router.get('/recent', async (req, res) => {
             .attr('href')
             ?.split('/')[3]
             .replace(/\b(?:-episode-[a-zA-Z0-9_]*)\b/gi, ''),
-          title: $(el).find('.entry-title').text(),
-          episode: ~~$(el).find('.episodes').text().replace(`"`, '').trim(),
-          cover: $(el).find('.limit img').attr('src')?.split('?')[0],
+          title: $(el).find('.tt').text(),
+          episode: ~~$(el).find('.bt .epx').text().replace(`Episode`, '').trim(),
+          cover: $(el).find('.ts-post-image').attr('src')?.split('?')[0],
           url: $(el)
             .find('a')
             .attr('href')
