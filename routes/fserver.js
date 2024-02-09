@@ -60,7 +60,81 @@ router.get('/recent', async (req, res) => {
       })
 
     res.send({
-      list: list
+      list
+    })
+  } catch (error) {
+    res.send({
+      message: error
+    })
+  }
+})
+
+router.get('/ongoing', async (req, res) => {
+  try {
+    const { page } = req.query
+    let list = []
+    options.url =
+      page.toString() === '1' ? `${BASEURL}/ongoing` : `${BASEURL}/ongoing/page/${page}}`
+    const base = await axios.request(options)
+    const $ = cheerio.load(base.data)
+    if (!$('.listupd').html()) {
+      throw new Error('Page not found')
+    }
+    $('.listupd')
+      .first()
+      .find('.excstf article')
+      .each((i, el) => {
+        list.push({
+          slug: $(el)
+            .find('a')
+            .attr('href')
+            ?.split('/')[3]
+            .replace(/\b(?:-episode-[a-zA-Z0-9_]*)\b/gi, ''),
+          title: $(el).find('.tt').text(),
+          episode: ~~$(el).find('.bt .epx').text().replace(`Episode`, '').trim(),
+          cover: $(el).find('.ts-post-image').attr('src')?.split('?')[0],
+          url: $(el)
+            .find('a')
+            .attr('href')
+            ?.replace(/\b(?:-episode-[a-zA-Z0-9_]*)\b/gi, '')
+        })
+      })
+
+    let maxPage = $('.page')
+      .first()
+      .find('.pagination a:not(.prev,.next)')
+      .last()
+      .text()
+      .replace(',', '')
+    if (list.length == 0) {
+      throw new Error('Anime not found')
+    }
+    res.send({
+      page: Number(page),
+      maxPage: Number(maxPage),
+      list
+    })
+  } catch (error) {
+    res.send({
+      message: error
+    })
+  }
+})
+
+router.get('/get-video', async (req, res) => {
+  try {
+    const { slug, episode } = req.query
+    let list = []
+    options.url = `${BASEURL}/${slug}-episode-${episode}`
+    const base = await axios.request(options)
+    const $ = cheerio.load(base.data)
+    if (!$('#embed_holder').html()) {
+      throw new Error('Page not found')
+    }
+    let link = $('#embed_holder').find('iframe').attr('src')
+
+    res.send({
+      link
     })
   } catch (error) {
     res.send({
