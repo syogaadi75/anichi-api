@@ -439,9 +439,15 @@ router.get('/get-video', async (req, res) => {
     $('.item.video-nav .mobius .mirror option').each((i, el) => {
       if ($(el).attr('value')) {
         const decodedData = Buffer.from($(el).attr('value'), 'base64').toString('utf-8')
+        // Mengurai HTML menggunakan Cheerio
+        const $$ = cheerio.load(decodedData)
+
+        // Mengambil nilai src dari tag iframe
+        const srcValue = $$('iframe').attr('src')
+
         serverVideo.push({
           text: $(el).text(),
-          value: decodedData
+          value: srcValue
         })
       }
     })
