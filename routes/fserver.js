@@ -435,6 +435,17 @@ router.get('/get-video', async (req, res) => {
       })
     })
 
+    const serverVideo = []
+    $('.item.video-nav .mobius .mirror option').each((i, el) => {
+      if ($(el).attr('value')) {
+        const decodedData = Buffer.from($(el).attr('value'), 'base64').toString('utf-8')
+        serverVideo.push({
+          text: $(el).text(),
+          value: decodedData
+        })
+      }
+    })
+
     res.send({
       slug,
       cover,
@@ -443,7 +454,8 @@ router.get('/get-video', async (req, res) => {
       link,
       navigation,
       downloadLinks,
-      synopsis
+      synopsis,
+      serverVideo
     })
   } catch (error) {
     res.send({
