@@ -204,9 +204,14 @@ router.get('/recent', async (req, res) => {
             .attr('href')
             ?.split('/')[3]
             .replace(/\b(?:-episode-[a-zA-Z0-9_]*)\b/gi, ''),
-          title: $(el).find('.tt')..contents().filter(function() {
-              return this.nodeType === 3;
-          }).text().trim(),
+          title: $(el)
+            .find('.tt')
+            .contents()
+            .filter(function () {
+              return this.nodeType === 3
+            })
+            .text()
+            .trim(),
           episode: ~~$(el).find('.bt .epx').text().replace(`Episode`, '').trim(),
           cover: $(el).find('.ts-post-image').attr('src')?.split('?')[0],
           url: $(el)
