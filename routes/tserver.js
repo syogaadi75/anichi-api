@@ -254,8 +254,8 @@ router.get('/anime/:animeId', async (req, res) => {
     })
 
     const episode = {
-      first: episodes[0],
-      last: episodes[episodes.length - 1]
+      first: episodes[episodes.length - 1],
+      last: episodes[0]
     }
 
     res.send({
