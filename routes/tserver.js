@@ -234,15 +234,19 @@ router.get('/anime/:animeId', async (req, res) => {
       info[key] = text
     })
     const episodes = []
-    $('.container .card-body.list-group.mt-n4.overflow-auto.mb-4 a').each((i, el) => {
-      episodes.push({
-        slug: $(el)
-          .attr('href')
-          .match(/\/watch\/([a-z-]+)-episode/i)
-        episode: $(el)
-          .attr('href')
-          .match(/episode-(\d+)/i)[1]
-      })
+    $('.container .card-body.list-group.mt-n4.overflow-auto.mb-4[itemprop=url] a').each((i, el) => {
+      let href = $(el).attr('href')
+      const parts = href.split('/') // memecah href berdasarkan karakter /
+      const result = parts.slice(-2, -1)[0]
+      if (result === 'batch') {
+      } else {
+        episodes.push({
+          slug: result,
+          episode: $(el)
+            .attr('href')
+            .match(/episode-(\d+)/i)[1]
+        })
+      }
     })
 
     const episode = {
