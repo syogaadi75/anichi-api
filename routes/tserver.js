@@ -149,127 +149,27 @@ router.get('/genres/:id', async (req, res) => {
   }
 })
 
-router.get('/popular', async (req, res) => {
-  try {
-    let list = []
-    options.url = `${BASEURL}`
-    const base = await axios.request(options)
-    const $ = cheerio.load(base.data)
-    if (!$('#slidertwo').html()) {
-      throw new Error('Page not found')
-    }
-    $('#slidertwo')
-      .first()
-      .find('.swiper-wrapper .swiper-slide.item ')
-      .each((i, el) => {
-        let backgroundImage = $('.backdrop').css('background-image')
-        backgroundImage = backgroundImage.replace('url(', '').replace(')', '').replace(/\"/gi, '')
-        list.push({
-          slug: $(el).find('a').attr('href')?.split('/')[4],
-          title: $(el).find('h2').text(),
-          cover: backgroundImage,
-          url: $(el)
-            .find('a.watch')
-            .attr('href')
-            ?.replace(/\b(?:-episode-[a-zA-Z0-9_]*)\b/gi, '')
-        })
-      })
-
-    res.send({
-      list
-    })
-  } catch (error) {
-    res.send({
-      message: error
-    })
-  }
-})
-
-router.get('/recent', async (req, res) => {
-  try {
-    let list = []
-    options.url = `${BASEURL}`
-    const base = await axios.request(options)
-    const $ = cheerio.load(base.data)
-    if (!$('.listupd').html()) {
-      throw new Error('Page not found')
-    }
-    $('.listupd')
-      .first()
-      .find('.excstf article')
-      .each((i, el) => {
-        list.push({
-          slug: $(el)
-            .find('a')
-            .attr('href')
-            ?.split('/')[3]
-            .replace(/\b(?:-episode-[a-zA-Z0-9_]*)\b/gi, ''),
-          title: $(el)
-            .find('.tt')
-            .contents()
-            .filter(function () {
-              return this.nodeType === 3
-            })
-            .text()
-            .trim(),
-          episode: ~~$(el).find('.bt .epx').text().replace(`Episode`, '').trim(),
-          cover: $(el).find('.ts-post-image').attr('src')?.split('?')[0],
-          url: $(el)
-            .find('a')
-            .attr('href')
-            ?.replace(/\b(?:-episode-[a-zA-Z0-9_]*)\b/gi, '')
-        })
-      })
-
-    res.send({
-      list
-    })
-  } catch (error) {
-    res.send({
-      message: error
-    })
-  }
-})
-
 router.get('/ongoing', async (req, res) => {
   try {
     const { page } = req.query
     let list = []
-    options.url =
-      page.toString() === '1' ? `${BASEURL}/ongoing` : `${BASEURL}/ongoing/page/${page}}`
+    options.url = page.toString() === '1' ? `${BASEURL}` : `${BASEURL}/anime/ongoing/${page}}`
     const base = await axios.request(options)
     const $ = cheerio.load(base.data)
-    if (!$('.listupd').html()) {
-      throw new Error('Page not found')
-    }
-    $('.listupd')
-      .first()
-      .find('.excstf article')
-      .each((i, el) => {
-        list.push({
-          slug: $(el).find('a').attr('href')?.split('/')[4],
-          title: $(el).find('.tt').text(),
-          episode: ~~$(el).find('.bt .epx').text().replace(`Episode`, '').trim(),
-          cover: $(el).find('.ts-post-image').attr('src')?.split('?')[0],
-          url: $(el)
-            .find('a')
-            .attr('href')
-            ?.replace(/\b(?:-episode-[a-zA-Z0-9_]*)\b/gi, '')
-        })
+    $('div.row[itemscope] div.col-md-3.col-6.text-start.mb-4').each((i, el) => {
+      let slug = $(el).find('a').attr('href')?.split('/')[3].split('-sub-indo')[0]
+      console.log(slug, 'slug')
+      list.push({
+        slug,
+        title: $(el).find('.marquee__line').text(),
+        episode: $(el).find('p').text().replace(`Episode`, '').trim(),
+        cover: $(el).find('img').attr('src')?.split('?')[0]
       })
+    })
 
-    let maxPage = $('.page')
-      .first()
-      .find('.pagination a:not(.prev,.next)')
-      .last()
-      .text()
-      .replace(',', '')
-    if (list.length == 0) {
-      throw new Error('Anime not found')
-    }
     res.send({
       page: Number(page),
-      maxPage: Number(maxPage),
+      maxPage: 4,
       list
     })
   } catch (error) {
@@ -319,67 +219,44 @@ router.get('/anime/:animeId', async (req, res) => {
   try {
     let list = []
     const { animeId } = req.params
-    const url = `${BASEURL}/anime/${animeId}`
+    const url = `${BASEURL}/anime/view/${animeId}`
     options.url = url
     const base = await axios.request(options)
     const $ = cheerio.load(base.data)
-    if (!$('.postbody').html()) {
-      throw new Error('Page not found')
-    }
 
-    const slug = $('meta[property="og:url"]').attr('content')?.split('/')[4]
-    const bigCover = $('.postbody .bigcover .ime img').attr('src')
-    const cover = $('.postbody .bigcontent .thumb img').attr('src')
-    const title = $('.postbody .bigcontent .infox h1.entry-title').text()
-    const synopsis = []
-    const paragraph = $('.postbody .bixbox.synp .entry-content p').each((i, el) => {
-      synopsis.push($(el).text().trim())
-    })
+    const slug = animeId
+    const cover = $('.container img[itemprop="thumbnail"]').attr('src')
+    const synopsis = $('p.card-body.mt-n4.overflow-auto.text-dark').text()
     const info = {}
-    $('.postbody .bigcontent .info-content .spe span').each(function () {
-      let key = $(this).find('b').text().replace(':', '').toLowerCase().replace(' ', '_')
-      let text = $(this).text()
-      let split = text.split(':')
-      let value = split[1].trim()
-      info[key] = value
+    $('table.table.table-bordered.table-hover.text-dark tbody tr').each(function () {
+      let key = $(this).find('th').text().toLowerCase().replace(' ', '_')
+      let text = $(this).find('td').text()
+      info[key] = text
     })
-    const genres = []
-    $('.postbody .bigcontent .info-content .genxed a').each((i, el) => {
-      let hrefValue = $(el).attr('href')
-      let parts = hrefValue.split('/')
-      let slug = parts[parts.length - 2]
-      genres.push({
-        slug: slug,
-        text: $(el).text()
+    const episodes = []
+    $('.container .card-body.list-group.mt-n4.overflow-auto.mb-4 a').each((i, el) => {
+      episodes.push({
+        slug: $(el)
+          .attr('href')
+          .match(/\/([a-z]+)-episode/i)[1],
+        episode: $(el)
+          .attr('href')
+          .match(/episode-(\d+)/i)[1]
       })
     })
 
     const episode = {
-      first: $('.epcheck .inepcx .epcur.epcurfirst').text().replace('Episode', '').trim(),
-      last: $('.epcheck .inepcx .epcur.epcurlast').text().replace('Episode', '').trim()
+      first: episodes[0],
+      last: episodes[episodes.length - 1]
     }
-    const episodes = []
-    $('.epcheck .eplister ul li').each((i, el) => {
-      let number = $(el).find('.epl-num').text()
-      let text = $(el).find('.epl-title').text()
-      let date = $(el).find('.epl-date').text()
-      episodes.push({
-        number,
-        text,
-        date
-      })
-    })
 
     res.send({
       slug,
-      bigCover,
       cover,
-      title,
       synopsis,
-      genres,
       info,
-      episode,
-      episodes
+      episodes,
+      episode
     })
   } catch (error) {
     res.send({
@@ -391,12 +268,12 @@ router.get('/anime/:animeId', async (req, res) => {
 router.get('/get-video', async (req, res) => {
   try {
     const { slug, episode } = req.query
-    const url = BASEURL + `/anime/watch/slf-episode-18-sub-indo`
+    const url = BASEURL + `/anime/watch/${slug}-episode-${episode}-sub-indo`
     options.url = url
     const base = await axios.request(options)
     const $ = cheerio.load(base.data)
 
-    const defaultSrc = $('section iframe').attr('src')
+    const defaultSrc = BASEURL + $('section iframe').attr('src')
     const servers = []
     $('.dropdown').each((i, el) => {
       let resolution = $(el).find('button').text()
@@ -441,28 +318,39 @@ router.get('/get-video', async (req, res) => {
         })
       }
     })
+
+    const downloads = []
+    $('.table-responsive.m-4 table.card-body.overflow-auto.table.table-hover.mt-n2 tbody tr').each(
+      (i, el) => {
+        let type = $(el).find('th').text()
+        let sources = []
+        $(el)
+          .find('td')
+          .each((j, val) => {
+            sources.push({
+              source: $(el).find('a').text(),
+              src: $(el).find('a').attr('href')
+            })
+          })
+        downloads.push({ type, sources })
+      }
+    )
+    const episodes = []
+    $('.container .card-body.overflow-auto.list-group.mt-n4.mb-4 a').each((i, el) => {
+      episodes.push({
+        slug: $(el)
+          .attr('href')
+          .match(/^[a-z]+(?=-episode)/i)[0],
+        episode: $(el)
+          .attr('href')
+          .match(/-episode-(\d+)/i)[1]
+      })
+    })
     res.send({
       defaultSrc,
-      servers
-    })
-  } catch (error) {
-    res.send({
-      message: error
-    })
-  }
-})
-
-router.get('/get-video-two', async (req, res) => {
-  try {
-    const url = 'https://otakudesu.media/episode/kny-ksh-episode-1-sub-indo'
-    options.url = url
-    const base = await axios.request(options)
-    const $ = cheerio.load(base.data)
-
-    const defaultSrc = $('#pembed iframe').attr('src')
-    res.send({
-      defaultSrc,
-      ts: 'jalan'
+      servers,
+      downloads,
+      episodes
     })
   } catch (error) {
     res.send({
