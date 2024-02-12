@@ -240,10 +240,11 @@ router.get('/anime/:animeId', async (req, res) => {
     const episodes = []
     $('.container .card-body.list-group.mt-n4.overflow-auto.mb-4[itemprop=url] a').each((i, el) => {
       let href = $(el).attr('href')
-      const parts = href.split('/') // memecah href berdasarkan karakter /
-      const result = parts.slice(-2, -1)[0]
-      if (result === 'batch') {
-      } else {
+      let parts = href.split('/')
+      let string = parts[3]
+      var episodeIndex = string.indexOf('-episode')
+      var result = string.substring(0, episodeIndex)
+      if (result !== 'batch') {
         episodes.push({
           slug: result,
           episode: $(el)
