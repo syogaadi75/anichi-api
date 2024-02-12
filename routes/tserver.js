@@ -6,7 +6,7 @@ var request = require('request')
 const zlib = require('zlib')
 const jsdom = require('jsdom')
 
-const BASEURL = 'https://tv1.ichinime.net'
+const BASEURL = 'https://animex.biz.id'
 
 // axios.defaults.validateStatus = () => true
 
@@ -391,77 +391,78 @@ router.get('/anime/:animeId', async (req, res) => {
 router.get('/get-video', async (req, res) => {
   try {
     const { slug, episode } = req.query
-    let list = []
-    options.url = `${BASEURL}/${slug}-episode-${episode}`
+    const url = BASEURL + `/anime/watch/slf-episode-18-sub-indo`
+    options.url = url
     const base = await axios.request(options)
     const $ = cheerio.load(base.data)
-    if (!$('#embed_holder').html()) {
-      throw new Error('Page not found')
-    }
-    let link = $('#embed_holder').find('iframe').attr('src')
-    let cover = $('.headlist .thumb img').attr('src')
-    let title = $('.title-section h1.entry-title').text()
-    let synopsis = []
-    $('.entry-content .bixbox.mctn p').each((i, el) => {
-      synopsis.push($(el).text())
-    })
-    let navigation = {
-      prev: false,
-      next: false
-    }
 
-    let nav = $('.naveps.bignav .nvs').each((i, el) => {
-      let aEl = $(el).find('a').text().trim().toLowerCase()
-      if (i === 0) {
-        if (aEl === 'prev') {
-          navigation.prev = true
-        } else {
-          navigation.prev = false
-        }
-      } else if (i === 2) {
-        if (aEl === 'next') {
-          navigation.next = true
-        } else {
-          navigation.next = false
-        }
-      }
-    })
-
-    const downloadLinks = []
-    $('.mctnx .soraddlx.soradlg .soraurlx a').each((i, el) => {
-      downloadLinks.push({
-        text: $(el).text(),
-        link: $(el).attr('href')
-      })
-    })
-
-    const serverVideo = []
-    $('.item.video-nav .mobius .mirror option').each((i, el) => {
-      if ($(el).attr('value')) {
-        const decodedData = Buffer.from($(el).attr('value'), 'base64').toString('utf-8')
-        // Mengurai HTML menggunakan Cheerio
-        const $$ = cheerio.load(decodedData)
-
-        // Mengambil nilai src dari tag iframe
-        const srcValue = $$('iframe').attr('src')
-
-        serverVideo.push({
-          text: $(el).text(),
-          value: srcValue
+    const defaultSrc = $('section iframe').attr('src')
+    const servers = []
+    $('.dropdown').each((i, el) => {
+      let resolution = $(el).find('button').text()
+      if (resolution == '360p') {
+        let server360 = []
+        $(el)
+          .find('.dropdown-content a')
+          .each((j, val) => {
+            var onclickValue = $(val).attr('onclick')
+            var src = onclickValue.match(/'(.*?)'/)[1]
+            server360.push({ text: $(val).text(), src })
+          })
+        servers.push({
+          resolution: '360',
+          list: server360
+        })
+      } else if (resolution == '480p') {
+        let server480 = []
+        $(el)
+          .find('.dropdown-content a')
+          .each((j, val) => {
+            var onclickValue = $(val).attr('onclick')
+            var src = onclickValue.match(/'(.*?)'/)[1]
+            server480.push({ text: $(val).text(), src })
+          })
+        servers.push({
+          resolution: '480',
+          list: server480
+        })
+      } else if (resolution == '720p') {
+        let server720 = []
+        $(el)
+          .find('.dropdown-content a')
+          .each((j, val) => {
+            var onclickValue = $(val).attr('onclick')
+            var src = onclickValue.match(/'(.*?)'/)[1]
+            server720.push({ text: $(val).text(), src })
+          })
+        servers.push({
+          resolution: '720',
+          list: server720
         })
       }
     })
-
     res.send({
-      slug,
-      cover,
-      episode,
-      title,
-      link,
-      navigation,
-      downloadLinks,
-      synopsis,
-      serverVideo
+      defaultSrc,
+      servers
+    })
+  } catch (error) {
+    res.send({
+      message: error
+    })
+  }
+})
+
+router.get('/get-video-two', async (req, res) => {
+  try {
+    const url = 'https://nontonanimeid.org/nanatsu-no-taizai-mokushiroku-no-yonkishi-episode-17/'
+    options.url = url
+    const base = await axios.request(options)
+    const $ = cheerio.load(base.data)
+
+    const defaultSrc = $('#videoku iframe').attr('src')
+    res.send({
+      defaultSrc,
+      ts: 'jalan'
     })
   } catch (error) {
     res.send({

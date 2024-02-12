@@ -3,6 +3,7 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 // Routes
 const fserver = require('./routes/fserver')
+const tserver = require('./routes/tserver')
 
 const app = express()
 
@@ -11,6 +12,7 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded())
 
 app.use('/fserver', fserver)
+app.use('/tserver', tserver)
 app.get('/', (req, res) => {
   res.send('Selamat Datang!')
 })
