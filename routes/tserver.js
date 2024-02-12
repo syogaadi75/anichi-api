@@ -226,6 +226,7 @@ router.get('/anime/:animeId', async (req, res) => {
 
     const slug = animeId
     const cover = $('.container img[itemprop="thumbnail"]').attr('src')
+    const banner = $('.page-header').css('background-image')
     const synopsis = $('p.card-body.mt-n4.overflow-auto.text-dark').text()
     const info = {}
     $('table.table.table-bordered.table-hover.text-dark tbody tr').each(function () {
@@ -257,6 +258,7 @@ router.get('/anime/:animeId', async (req, res) => {
     res.send({
       slug,
       cover,
+      banner,
       synopsis,
       info,
       episodes,
