@@ -238,7 +238,7 @@ router.get('/anime/:animeId', async (req, res) => {
       episodes.push({
         slug: $(el)
           .attr('href')
-          .match(/\/([a-z-]+)-episode/i)[1],
+          .match(/\/watch\/([a-z-]+)-episode/i)
         episode: $(el)
           .attr('href')
           .match(/episode-(\d+)/i)[1]
