@@ -470,4 +470,23 @@ router.get('/get-video', async (req, res) => {
   }
 })
 
+router.get('/otakudesu', async (req, res) => {
+  try {
+    const url = `https://animex.biz.id/anime/watch/slf-episode-18-sub-indo`
+    options.url = url
+    const base = await axios.request(options)
+    const $ = cheerio.load(base.data)
+
+    const link = $('section iframe').attr('src')
+    res.send({
+      test: 'jalan',
+      link
+    })
+  } catch (error) {
+    res.send({
+      message: error
+    })
+  }
+})
+
 module.exports = router
