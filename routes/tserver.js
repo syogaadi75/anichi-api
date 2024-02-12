@@ -226,7 +226,10 @@ router.get('/anime/:animeId', async (req, res) => {
 
     const slug = animeId
     const cover = $('.container img[itemprop="thumbnail"]').attr('src')
-    const banner = $('.page-header').css('background-image')
+    const banner = $('.page-header')
+      .attr('style')
+      .replace('background-image: url(', '')
+      .replace('); height: 45vh; min-height: 300px; max-height: 560px;', '')
     const synopsis = $('p.card-body.mt-n4.overflow-auto.text-dark').text()
     const info = {}
     $('table.table.table-bordered.table-hover.text-dark tbody tr').each(function () {
