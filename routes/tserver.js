@@ -454,12 +454,12 @@ router.get('/get-video', async (req, res) => {
 
 router.get('/get-video-two', async (req, res) => {
   try {
-    const url = 'https://nontonanimeid.org/nanatsu-no-taizai-mokushiroku-no-yonkishi-episode-17/'
+    const url = 'https://otakudesu.media/episode/kny-ksh-episode-1-sub-indo'
     options.url = url
     const base = await axios.request(options)
     const $ = cheerio.load(base.data)
 
-    const defaultSrc = $('#videoku iframe').attr('src')
+    const defaultSrc = $('#pembed iframe').attr('src')
     res.send({
       defaultSrc,
       ts: 'jalan'
