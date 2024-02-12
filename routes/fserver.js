@@ -478,9 +478,53 @@ router.get('/otakudesu', async (req, res) => {
     const $ = cheerio.load(base.data)
 
     const link = $('section iframe').attr('src')
+    const servers = []
+    $('.dropdown').each((i, el) => {
+      let resolution = $(el).find('button').text()
+      if (resolution == '360p') {
+        let server360 = []
+        $(el)
+          .find('.dropdown-content a')
+          .each((j, val) => {
+            var onclickValue = $(val).attr('onclick')
+            var url = onclickValue.match(/'(.*?)'/)[1]
+            server360.push({ text: $(val).text(), url })
+          })
+        servers.push({
+          resolution: '360',
+          list: server360
+        })
+      } else if (resolution == '480p') {
+        let server480 = []
+        $(el)
+          .find('.dropdown-content a')
+          .each((j, val) => {
+            var onclickValue = $(val).attr('onclick')
+            var url = onclickValue.match(/'(.*?)'/)[1]
+            server480.push({ text: $(val).text(), url })
+          })
+        servers.push({
+          resolution: '480',
+          list: server480
+        })
+      } else if (resolution == '720p') {
+        let server720 = []
+        $(el)
+          .find('.dropdown-content a')
+          .each((j, val) => {
+            var onclickValue = $(val).attr('onclick')
+            var url = onclickValue.match(/'(.*?)'/)[1]
+            server720.push({ text: $(val).text(), url })
+          })
+        servers.push({
+          resolution: '720',
+          list: server720
+        })
+      }
+    })
     res.send({
       test: 'jalan',
-      link
+      servers
     })
   } catch (error) {
     res.send({
