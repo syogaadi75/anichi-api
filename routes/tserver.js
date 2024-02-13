@@ -241,16 +241,18 @@ router.get('/anime/:animeId', async (req, res) => {
     $('.container .card-body.list-group.mt-n4.overflow-auto.mb-4[itemprop=url] a').each((i, el) => {
       let href = $(el).attr('href')
       let parts = href.split('/')
-      let string = parts[3]
-      var episodeIndex = string.indexOf('-episode')
-      var result = string.substring(0, episodeIndex)
-      if (result !== 'batch') {
-        episodes.push({
-          slug: result,
-          episode: $(el)
-            .attr('href')
-            .match(/episode-(\d+)/i)[1]
-        })
+      if (parts[2] !== 'batch') {
+        let string = parts[3]
+        var episodeIndex = string.indexOf('-episode')
+        var result = string.substring(0, episodeIndex)
+        if (result !== 'batch') {
+          episodes.push({
+            slug: result,
+            episode: $(el)
+              .attr('href')
+              .match(/episode-(\d+)/i)[1]
+          })
+        }
       }
     })
 
