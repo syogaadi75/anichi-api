@@ -242,17 +242,22 @@ router.get('/anime/:animeId', async (req, res) => {
       let href = $(el).attr('href')
       let parts = href.split('/')
       if (parts[2] !== 'batch') {
+        let episode = $(el)
+          .attr('href')
+          .match(/episode-(\d+)/i)[1]
         let string = parts[3]
-        var episodeIndex = string.indexOf('-episode')
-        var result = string.substring(0, episodeIndex)
-        if (result !== 'batch') {
-          episodes.push({
-            slug: result,
-            episode: $(el)
-              .attr('href')
-              .match(/episode-(\d+)/i)[1]
-          })
+        let episodeIndex = string.indexOf('-episode')
+        let result = string.substring(0, episodeIndex)
+        let stringSe = string.split('-')
+        let subepisode = '-'
+        if (episode != stringSe[stringSe.length - 3]) {
+          subepisode = stringSe[stringSe.length - 3]
         }
+        episodes.push({
+          slug: result,
+          episode,
+          subepisode
+        })
       }
     })
 
