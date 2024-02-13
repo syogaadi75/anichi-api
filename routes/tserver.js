@@ -350,13 +350,21 @@ router.get('/get-video', async (req, res) => {
     )
     const episodes = []
     $('.container .card-body.overflow-auto.list-group.mt-n4.mb-4 a').each((i, el) => {
+      let episode = $(el)
+        .attr('href')
+        .match(/-episode-(\d+)/i)[1]
+      let href = $(el).attr('href')
+      let split = href.split('-')
+      let subEpisode = '-'
+      if (split[split.length - 3] != episode) {
+        subEpisode = split[split.length - 3]
+      }
       episodes.push({
         slug: $(el)
           .attr('href')
           .match(/^[a-z]+(?=-episode)/i)[0],
-        episode: $(el)
-          .attr('href')
-          .match(/-episode-(\d+)/i)[1]
+        episode,
+        subEpisode
       })
     })
     res.send({
