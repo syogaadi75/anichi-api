@@ -279,8 +279,12 @@ router.get('/anime/:animeId', async (req, res) => {
 
 router.get('/get-video', async (req, res) => {
   try {
-    const { slug, episode } = req.query
-    const url = BASEURL + `/anime/watch/${slug}-episode-${episode}-sub-indo`
+    const { slug, episode, subepisode } = req.query
+    let newEpisode = episode
+    if (subepisode) {
+      newEpisode = newEpisode + '-' + subepisode
+    }
+    const url = BASEURL + `/anime/watch/${slug}-episode-${newEpisode}-sub-indo`
     options.url = url
     const base = await axios.request(options)
     const $ = cheerio.load(base.data)
