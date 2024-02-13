@@ -368,10 +368,14 @@ router.get('/get-video', async (req, res) => {
       if (split[split.length - 3] != episode) {
         subEpisode = split[split.length - 3]
       }
+      // Mendapatkan nilai "loop7" dari atribut href
+      var nilaiHref = $(el).attr('href')
+
+      // Memperoleh bagian yang Anda inginkan (loop7) dari nilai href
+      var nilaiLoop = nilaiHref.split('-')[0]
+
       episodes.push({
-        slug: $(el)
-          .attr('href')
-          .match(/^[a-z]+(?=-episode)/i)[0],
+        slug: nilaiLoop,
         episode,
         subEpisode
       })
