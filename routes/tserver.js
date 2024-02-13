@@ -283,6 +283,7 @@ router.get('/get-video', async (req, res) => {
     const base = await axios.request(options)
     const $ = cheerio.load(base.data)
 
+    const title = $('.card-title[itemprop=name]').text().replace('Subtitle Indonesia', '').trim()
     const defaultSrc = BASEURL + $('section iframe').attr('src')
     const servers = []
     $('.dropdown').each((i, el) => {
@@ -357,6 +358,7 @@ router.get('/get-video', async (req, res) => {
       })
     })
     res.send({
+      title,
       defaultSrc,
       servers,
       downloads,
