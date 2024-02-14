@@ -30,36 +30,24 @@ var options = {
   }
 }
 
-router.get('/search', async (req, res) => {
+router.post('/search', async (req, res) => {
   try {
-    const { s } = req.query
-    const searchUrl = s.replace(' ', '+')
+    const { title } = req.body
+    const searchUrl = title.replace(' ', '+')
     let list = []
-    options.url = `${BASEURL}/?s=${searchUrl}`
+    options.url = `${BASEURL}/anime/search?q=${searchUrl}`
     const base = await axios.request(options)
     const $ = cheerio.load(base.data)
-    $('.listupd article').each((i, el) => {
+    $('div.row[itemscope] div.col-md-3.col-6.text-start.mb-4').each((i, el) => {
+      let slug = $(el).find('a').attr('href')?.split('/')[3].split('-sub-indo')[0]
       list.push({
-        slug: $(el).find('a').attr('href')?.split('/')[4],
-        title: $(el).find('.tt').text(),
-        episode: ~~$(el).find('.bt .epx').text().replace(`Episode`, '').trim(),
-        cover: $(el).find('.ts-post-image').attr('src')?.split('?')[0],
-        url: $(el)
-          .find('a')
-          .attr('href')
-          ?.replace(/\b(?:-episode-[a-zA-Z0-9_]*)\b/gi, '')
+        slug,
+        title: $(el).find('.marquee__line').text(),
+        cover: $(el).find('img').attr('src')?.split('?')[0]
       })
     })
 
-    let maxPage = $('.postbody')
-      .first()
-      .find('.pagination a:not(.prev,.next)')
-      .last()
-      .text()
-      .replace(',', '')
     res.send({
-      page: Number(page),
-      maxPage: Number(maxPage),
       list
     })
   } catch (error) {
@@ -72,22 +60,20 @@ router.get('/search', async (req, res) => {
 router.get('/genres', async (req, res) => {
   try {
     let list = []
-    options.url = `${BASEURL}/genre`
+    options.url = `${BASEURL}/anime/genres`
     const base = await axios.request(options)
     const $ = cheerio.load(base.data)
-    if (!$('.postbody').html()) {
+    if (!$('.container').html()) {
       throw new Error('Page not found')
     }
-    $('.postbody ul.taxindex li').each((i, el) => {
+    $('.container table tbody tr').each((i, el) => {
       let hrefValue = $(el).find('a').attr('href')
       let parts = hrefValue.split('/')
       let slug = parts[parts.length - 2]
-      let name = $(el).find('a span.name').text()
-      let count = $(el).find('a span.count').text()
+      let name = $(el).find('a').text()
       list.push({
         slug,
-        name,
-        count
+        name
       })
     })
 
@@ -106,37 +92,31 @@ router.get('/genres/:id', async (req, res) => {
     const { page } = req.query
     const { id } = req.params
     let list = []
-    options.url =
-      page.toString() === '1' ? `${BASEURL}/genres/${id}` : `${BASEURL}/genres/${id}/page/${page}`
+    options.url = `${BASEURL}/anime/genre/${id}/${page}`
     const base = await axios.request(options)
     const $ = cheerio.load(base.data)
-    if (!$('.listupd').html()) {
-      throw new Error('Page not found')
-    }
-    $('.listupd')
-      .first()
-      .find('article')
-      .each((i, el) => {
-        list.push({
-          slug: $(el).find('a').attr('href')?.split('/')[4],
-          title: $(el).find('.tt').text(),
-          cover: $(el).find('.ts-post-image').attr('src')?.split('?')[0],
-          url: $(el)
-            .find('a')
-            .attr('href')
-            ?.replace(/\b(?:-episode-[a-zA-Z0-9_]*)\b/gi, '')
-        })
+    $('div.row[itemscope] div.col-md-3.col-6.text-start.mb-4').each((i, el) => {
+      let slug = $(el).find('a').attr('href')?.split('/')[3].split('-sub-indo')[0]
+      list.push({
+        slug,
+        title: $(el).find('.marquee__line').text(),
+        episode: $(el).find('p').text().replace(`Episode`, '').trim(),
+        cover: $(el).find('img').attr('src')?.split('?')[0]
       })
+    })
 
-    let maxPage = $('.postbody')
+    let maxPage = $('ul.pagination')
       .first()
-      .find('.pagination a:not(.prev,.next)')
+      .find('.page-item a')
+      .filter(function () {
+        let title = $(this).attr('title')
+        return title && title.toLowerCase().indexOf('berikutnya') === -1
+      })
       .last()
       .text()
       .replace(',', '')
-    if (list.length == 0) {
-      throw new Error('Anime not found')
-    }
+      .trim()
+
     res.send({
       page: Number(page),
       maxPage: Number(maxPage),
@@ -158,7 +138,47 @@ router.get('/ongoing', async (req, res) => {
     const $ = cheerio.load(base.data)
     $('div.row[itemscope] div.col-md-3.col-6.text-start.mb-4').each((i, el) => {
       let slug = $(el).find('a').attr('href')?.split('/')[3].split('-sub-indo')[0]
-      console.log(slug, 'slug')
+      list.push({
+        slug,
+        title: $(el).find('.marquee__line').text(),
+        episode: $(el).find('p').text().replace(`Episode`, '').trim(),
+        cover: $(el).find('img').attr('src')?.split('?')[0]
+      })
+    })
+    let maxPage = $('ul.pagination')
+      .first()
+      .find('.page-item a')
+      .filter(function () {
+        let title = $(this).attr('title')
+        return title && title.toLowerCase().indexOf('berikutnya') === -1
+      })
+      .last()
+      .text()
+      .replace(',', '')
+      .trim()
+
+    res.send({
+      page: Number(page),
+      maxPage: Number(maxPage),
+      list
+    })
+  } catch (error) {
+    res.send({
+      message: error
+    })
+  }
+})
+
+router.get('/completed', async (req, res) => {
+  try {
+    const { page } = req.query
+    let list = []
+    options.url =
+      page.toString() === '1' ? `${BASEURL}/anime/completed` : `${BASEURL}/anime/completed/${page}}`
+    const base = await axios.request(options)
+    const $ = cheerio.load(base.data)
+    $('div.row[itemscope] div.col-md-3.col-6.text-start.mb-4').each((i, el) => {
+      let slug = $(el).find('a').attr('href')?.split('/')[3].split('-sub-indo')[0]
       list.push({
         slug,
         title: $(el).find('.marquee__line').text(),
@@ -167,9 +187,21 @@ router.get('/ongoing', async (req, res) => {
       })
     })
 
+    let maxPage = $('ul.pagination')
+      .first()
+      .find('.page-item a')
+      .filter(function () {
+        let title = $(this).attr('title')
+        return title && title.toLowerCase().indexOf('berikutnya') === -1
+      })
+      .last()
+      .text()
+      .replace(',', '')
+      .trim()
+
     res.send({
       page: Number(page),
-      maxPage: 4,
+      maxPage: Number(maxPage),
       list
     })
   } catch (error) {
