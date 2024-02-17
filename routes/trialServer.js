@@ -1,34 +1,46 @@
 const express = require('express')
 const axios = require('axios')
 const router = express.Router()
-const cheerio = require('cheerio')
-var request = require('request')
-const zlib = require('zlib')
-const jsdom = require('jsdom')
-const puppeteer = require('puppeteer')
+let puppeteer
+let chrome = {}
 const BASEURL = 'https://nontonanimeid.buzz'
 
-router.get('/recent', async (req, res) => {
-  const browser = await puppeteer.launch({
-    headless: false,
-    defaultViewport: false,
-    userDataDir: './tmp'
-  })
-  const page = await browser.newPage()
-  await page.goto(BASEURL)
+if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
+  chrome = require('chrome-aws-lambda')
+  puppeteer = require('puppeteer-core')
+} else {
+  puppeteer = require('puppeteer')
+}
 
-  const data = []
-  const animes = await page.$$('#postbaru .misha_posts_wrap article')
-  for (let anime of animes) {
-    const title = await anime.evaluate(
-      (el) => el.querySelector('.title.less.nlat.entry-title').textContent,
-      anime
-    )
-    data.push(title)
-    console.log(title, 'title')
+router.get('/recent', async (req, res) => {
+  let options = {}
+  if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
+    options = {
+      args: [...chrome.args, '--hide-scrollbars', '--disable-web-security'],
+      defaultViewport: chrome.defaultViewport,
+      executablePath: await chrome.executablePath,
+      headless: true,
+      ignoreHTTPSErrors: true
+    }
   }
-  await browser.close()
-  res.send(data)
+  try {
+    let browser = await puppeteer.launch(options)
+    const page = await browser.newPage()
+    await page.goto(BASEURL)
+
+    const data = []
+    const animes = await page.$$('#postbaru .misha_posts_wrap article')
+    for (let anime of animes) {
+      const title = await anime.evaluate(
+        (el) => el.querySelector('.title.less.nlat.entry-title').textContent,
+        anime
+      )
+      data.push(title)
+      console.log(title, 'title')
+    }
+    await browser.close()
+    res.send(data)
+  } catch (error) {}
 })
 
 module.exports = router
