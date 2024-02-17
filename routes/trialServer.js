@@ -1,27 +1,18 @@
 const express = require('express')
 const axios = require('axios')
 const router = express.Router()
-let puppeteer
-let chrome = {}
 const BASEURL = 'https://nontonanimeid.buzz'
 
-if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
-  chrome = require('chrome-aws-lambda')
-  puppeteer = require('puppeteer-core')
-} else {
-  puppeteer = require('puppeteer')
-}
+const chrome = require('chrome-aws-lambda')
+const puppeteer = require('puppeteer')
 
 router.get('/recent', async (req, res) => {
-  let options = {}
-  if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
-    options = {
-      args: [...chrome.args, '--hide-scrollbars', '--disable-web-security'],
-      defaultViewport: chrome.defaultViewport,
-      executablePath: await chrome.executablePath,
-      headless: true,
-      ignoreHTTPSErrors: true
-    }
+  let options = {
+    args: [...chrome.args, '--hide-scrollbars', '--disable-web-security'],
+    defaultViewport: chrome.defaultViewport,
+    executablePath: await chrome.executablePath,
+    headless: true,
+    ignoreHTTPSErrors: true
   }
   try {
     let browser = await puppeteer.launch(options)
@@ -40,7 +31,9 @@ router.get('/recent', async (req, res) => {
     }
     await browser.close()
     res.send(data)
-  } catch (error) {}
+  } catch (error) {
+    res.send('error')
+  }
 })
 
 module.exports = router
