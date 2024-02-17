@@ -32,7 +32,7 @@ router.get('/recent', async (req, res) => {
     await browser.close()
     res.send(data)
   } catch (error) {
-    res.send('error')
+    res.send(error)
   }
 })
 
