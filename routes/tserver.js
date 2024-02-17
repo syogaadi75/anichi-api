@@ -382,8 +382,8 @@ router.get('/get-video', async (req, res) => {
           .find('td')
           .each((j, val) => {
             sources.push({
-              source: $(el).find('a').text(),
-              src: $(el).find('a').attr('href')
+              source: $(val).find('a').text(),
+              src: $(val).find('a').attr('href')
             })
           })
         downloads.push({ type, sources })
