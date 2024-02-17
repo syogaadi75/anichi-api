@@ -4,7 +4,7 @@ const router = express.Router()
 const BASEURL = 'https://nontonanimeid.buzz'
 
 const chrome = require('chrome-aws-lambda')
-const puppeteer = require('puppeteer-core')
+const puppeteer = require('puppeteer')
 
 router.get('/recent', async (req, res) => {
   let options = {
