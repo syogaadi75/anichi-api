@@ -251,7 +251,11 @@ router.get('/anime/:animeId', async (req, res) => {
   try {
     let list = []
     const { animeId } = req.params
-    const url = `${BASEURL}/anime/view/${animeId}-sub-indo`
+    const checkedAnimeId =
+      animeId.includes('subt-indo') || animeId.includes('sub-indo')
+        ? animeId
+        : animeId + '-sub-indo'
+    const url = `${BASEURL}/anime/view/${checkedAnimeId}`
     options.url = url
     const base = await axios.request(options)
     const $ = cheerio.load(base.data)
