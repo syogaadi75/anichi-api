@@ -252,7 +252,7 @@ router.get('/anime/:animeId', async (req, res) => {
     let list = []
     const { animeId } = req.params
     const checkedAnimeId =
-      animeId.includes('subt-indo') || animeId.includes('sub-indo')
+      animeId.includes('subt-indo') || animeId.includes('subtitle-indonesia')
         ? animeId
         : animeId + '-sub-indo'
     const url = `${BASEURL}/anime/view/${checkedAnimeId}`
