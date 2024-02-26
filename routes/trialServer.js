@@ -55,7 +55,7 @@ router.get('/recent', async (req, res) => {
     const base = await axios.request(options)
     const $ = cheerio.load(base.data)
     $('.bixbox.bbnofrm .listupd.normal .excstf article').each((i, el) => {
-      let slug = $(el).find('a').attr('href')?.split('/')[3].split('-sub-indo')[0]
+      let slug = $(el).find('a').attr('href')?.split('/')[3]
       list.push({
         slug,
         title: $(el).find('.tt').text()
@@ -66,6 +66,26 @@ router.get('/recent', async (req, res) => {
 
     res.send({
       list
+    })
+  } catch (error) {
+    res.send({
+      message: error
+    })
+  }
+})
+
+router.get('/anime/:animeId', async (req, res) => {
+  try {
+    const { animeId } = req.params
+
+    let list = []
+    options.url = `${BASEURL}/${animeId}`
+    const base = await axios.request(options)
+    const $ = cheerio.load(base.data)
+    const defaultPlayer = $('#pembed iframe').attr('src')
+
+    res.send({
+      defaultPlayer: defaultPlayer ? defaultPlayer : 'kosong bro'
     })
   } catch (error) {
     res.send({
