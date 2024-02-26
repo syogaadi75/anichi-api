@@ -1,7 +1,7 @@
 const express = require('express')
 const axios = require('axios')
 const router = express.Router()
-const BASEURL = 'https://otakudesu.ru'
+const BASEURL = 'https://otakudesu.cloud'
 const SECONDBASEURL = 'https://nontonanimeid.buzz'
 const cheerio = require('cheerio')
 
@@ -54,11 +54,11 @@ router.get('/recent', async (req, res) => {
     options.url = page.toString() === '1' ? `${BASEURL}` : `${BASEURL}/page/${page}}`
     const base = await axios.request(options)
     const $ = cheerio.load(base.data)
-    $('.bixbox.bbnofrm .listupd.normal .excstf article').each((i, el) => {
-      let slug = $(el).find('a').attr('href')?.split('/')[3]
+    $('.venz ul li').each((i, el) => {
+      let slug = $(el).find('a').attr('href')?.split('/')[4]
       list.push({
         slug,
-        title: $(el).find('.tt').text()
+        title: $(el).find('h2.jdlflm').text()
         // episode: $(el).find('p').text().replace(`Episode`, '').trim(),
         // cover: $(el).find('img').attr('src')?.split('?')[0]
       })
