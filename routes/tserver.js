@@ -23,11 +23,11 @@ const userAgentList = [
 
 var options = {
   url: null,
-  withCredentials: true,
-  headers: {
-    'User-Agent':
-      'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Mobile Safari/537.36'
-  }
+  withCredentials: true
+  // headers: {
+  //   'User-Agent':
+  //     'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Mobile Safari/537.36'
+  // }
 }
 
 router.post('/search', async (req, res) => {
