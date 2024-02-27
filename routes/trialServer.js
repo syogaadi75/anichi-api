@@ -75,18 +75,103 @@ router.get('/recent', async (req, res) => {
 })
 
 router.get('/anime/:animeId', async (req, res) => {
+  const { animeId } = req.params
+  let options = {
+    defaultViewport: false,
+    userDataDir: './tmp',
+    headless: true
+  }
   try {
-    const { animeId } = req.params
+    let browser = await puppeteer.launch()
+    const page = await browser.newPage()
+    await page.goto(`${BASEURL}/episode/${animeId}`)
 
-    let list = []
-    options.url = `${BASEURL}/${animeId}`
-    const base = await axios.request(options)
-    const $ = cheerio.load(base.data)
-    const defaultPlayer = $('#pembed iframe').attr('src')
+    const data = []
+    // const animes = await page.$$('#postbaru .misha_posts_wrap article')
+    const defaultPlayer = await page.$$('#pembed iframe')
+    const src = await defaultPlayer[0].evaluate((element) => element.getAttribute('src'))
+    // for (let anime of animes) {
+    //   const title = await anime.evaluate(
+    //     (el) => el.querySelector('.title.less.nlat.entry-title').textContent,
+    //     anime
+    //   )
+    //   data.push(title)
+    //   console.log(title, 'title')
+    // }
+    await browser.close()
+    res.status(300).json({ defaultPlayer: src })
+  } catch (error) {
+    res.send(error)
+  }
+})
 
-    res.send({
-      defaultPlayer: defaultPlayer ? defaultPlayer : 'kosong bro'
-    })
+// router.get('/anime/:animeId', async (req, res) => {
+//   try {
+//     const { animeId } = req.params
+
+//     let list = []
+//     options.url = `${BASEURL}/episode/${animeId}`
+//     const base = await axios.request(options)
+//     const $ = cheerio.load(base.data)
+//     const defaultPlayer = $('#pembed iframe').attr('src')
+//     const decode = atob('eyJpZCI6MTU2NjAxLCJpIjowLCJxIjoiNzIwcCJ9')
+//     const miror = []
+//     $('#embed_holder .mirrorstream ul').each((i, el) => {
+//       let resolution = $(el).attr('class')
+//       let resolutionServer = []
+//       $(el)
+//         .find('li')
+//         .each((j, val) => {
+//           let data = $(val).find('a').attr('data-content')
+//           let text = $(val).find('a').text()
+//           console.log(data, 'data')
+//           resolutionServer.push({
+//             text,
+//             data
+//           })
+//         })
+//       miror.push({
+//         resolution,
+//         server: resolutionServer
+//       })
+//     })
+
+//     res.send({
+//       defaultPlayer: defaultPlayer ? defaultPlayer : 'kosong bro',
+//       decode: JSON.parse(decode),
+//       miror
+//     })
+//   } catch (error) {
+//     res.send({
+//       message: error
+//     })
+//   }
+// })
+
+router.post('/changeServer', async (req, res) => {
+  try {
+    const { encryptServer } = req.body
+    const decryptServer = JSON.parse(atob(encryptServer))
+    const body = {
+      id: String(decryptServer.id),
+      i: String(decryptServer.i),
+      q: String(decryptServer.q),
+      nonce: 'faafb321d6',
+      action: '2a3505c93b0035d3f455df82bf976b84'
+    }
+
+    const newoptions = {
+      method: 'post',
+      url: `https://otakudesu.cloud/wp-admin/admin-ajax.php`,
+      data: body,
+      withCredentials: true,
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+      }
+    }
+    const data = await axios.request(newoptions)
+    res.send({ data })
   } catch (error) {
     res.send({
       message: error
