@@ -77,19 +77,21 @@ router.get('/recent', async (req, res) => {
 router.get('/anime/:animeId', async (req, res) => {
   const { animeId } = req.params
   let options = {
-    defaultViewport: false,
-    userDataDir: './tmp',
-    headless: true
+    args: [...chrome.args, '--hide-scrollbars', '--disable-web-security'],
+    defaultViewport: chrome.defaultViewport,
+    executablePath: await chrome.executablePath,
+    headless: true,
+    ignoreHTTPSErrors: true
   }
   try {
-    let browser = await puppeteer.launch()
+    let browser = await puppeteer.launch(options)
     const page = await browser.newPage()
     await page.goto(`${BASEURL}/episode/${animeId}`)
 
     const data = []
     // const animes = await page.$$('#postbaru .misha_posts_wrap article')
     const defaultPlayer = await page.$$('#pembed iframe')
-    const src = await defaultPlayer[0].evaluate((element) => element.getAttribute('src'))
+    const src = await page.evaluate((element) => element.getAttribute('src'), defaultPlayer[0])
     // for (let anime of animes) {
     //   const title = await anime.evaluate(
     //     (el) => el.querySelector('.title.less.nlat.entry-title').textContent,
@@ -99,7 +101,7 @@ router.get('/anime/:animeId', async (req, res) => {
     //   console.log(title, 'title')
     // }
     await browser.close()
-    res.status(300).json({ defaultPlayer: src })
+    res.send({ defaultPlayer: src })
   } catch (error) {
     res.send(error)
   }
