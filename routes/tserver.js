@@ -291,11 +291,38 @@ router.get('/get-video/:animeId', async (req, res) => {
       })
     })
 
+    let prev = { status: false, slug: '' }
+    let next = { status: false, slug: '' }
+    $('.venutama .prevnext .flir a').each((i, el) => {
+      let text = $(el).attr('title')
+      if (text == 'Episode Sebelumnya') {
+        let href = $(el).attr('href').split('/')
+        let slug = href[4]
+        prev = {
+          status: true,
+          slug
+        }
+      }
+      if (text == 'Episode Selanjutnya') {
+        let href = $(el).attr('href').split('/')
+        let slug = href[4]
+        next = {
+          status: true,
+          slug
+        }
+      }
+    })
+    const navigation = {
+      prev,
+      next
+    }
+
     res.send({
       title,
       defaultPlayer: defaultPlayer ? defaultPlayer : '-',
       servers,
       episodes,
+      navigation,
       downloads
     })
   } catch (error) {
