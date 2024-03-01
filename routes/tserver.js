@@ -179,7 +179,8 @@ router.get('/anime/:animeId', async (req, res) => {
     const info = {}
     $('.infozin .infozingle p').each(function () {
       let key = $(this).find('span b').text().toLowerCase().replace(' ', '_')
-      let text = $(this).find('span').text().trim()
+      let textSplit = $(this).find('span').text().split(':')
+      let text = textSplit[1].trim()
       info[key] = text
     })
     const episodes = []
