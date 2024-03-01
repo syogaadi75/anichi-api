@@ -61,6 +61,61 @@ router.get('/recent', async (req, res) => {
     })
   }
 })
+router.post('/search', async (req, res) => {
+  try {
+    let { anime } = req.body
+    let list = []
+    options.url = `${BASEURL}?s=${anime}&post_type=anime`
+    const base = await axios.request(options)
+    const $ = cheerio.load(base.data)
+    $('.venutama .page ul li').each((i, el) => {
+      let slug = $(el).find('a').attr('href')?.split('/')[4]
+      let genres = []
+      let status = ''
+      let rating = ''
+
+      $(el)
+        .find('.set')
+        .each((j, val) => {
+          if (j === 0) {
+            $(val)
+              .find('a')
+              .each((k, aEl) => {
+                let slug = $(aEl).attr('href').split('/')[4]
+                let text = $(aEl).text().trim()
+                genres.push({
+                  slug,
+                  text
+                })
+              })
+          } else if (j === 1) {
+            status = $(val).text().replace('Status :', '').trim()
+          } else if (j === 2) {
+            rating = $(val).text().replace('Rating :', '').trim()
+              ? $(val).text().replace('Rating :', '').trim()
+              : '-'
+          }
+        })
+
+      list.push({
+        slug,
+        title: $(el).find('h2').text().trim(),
+        cover: $(el).find('img').attr('src'),
+        genres,
+        status,
+        rating
+      })
+    })
+
+    res.send({
+      list
+    })
+  } catch (error) {
+    res.send({
+      message: error
+    })
+  }
+})
 router.get('/ongoing', async (req, res) => {
   try {
     const { page } = req.query
