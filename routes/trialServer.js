@@ -134,7 +134,7 @@ router.get('/changeServer/:serverId', async (req, res) => {
 
     const srcValue = $('iframe').attr('src')
     res.send({
-      ok: srcValue
+      src: srcValue
     })
   } catch (error) {
     res.send({
