@@ -279,10 +279,23 @@ router.get('/get-video/:animeId', async (req, res) => {
         })
     })
 
+    const episodes = []
+    $('.judul-recommend-anime-series .keyingpost li').each((i, el) => {
+      let aEl = $(el).find('a')
+      let split = aEl.attr('href').split('/')
+      let slug = split[4]
+      let text = aEl.text().trim()
+      episodes.push({
+        slug,
+        text
+      })
+    })
+
     res.send({
       title,
       defaultPlayer: defaultPlayer ? defaultPlayer : '-',
       servers,
+      episodes,
       downloads
     })
   } catch (error) {
