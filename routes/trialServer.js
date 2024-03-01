@@ -73,82 +73,75 @@ router.get('/recent', async (req, res) => {
     })
   }
 })
-
 router.get('/anime/:animeId', async (req, res) => {
-  const { animeId } = req.params
-  let options = {
-    args: [...chrome.args, '--hide-scrollbars', '--disable-web-security'],
-    defaultViewport: chrome.defaultViewport,
-    executablePath: await chrome.executablePath,
-    headless: true,
-    ignoreHTTPSErrors: true
-  }
   try {
-    let browser = await puppeteer.launch(options)
-    const page = await browser.newPage()
-    await page.goto(`${BASEURL}/episode/${animeId}`)
+    const { animeId } = req.params
+    let list = []
+    options.url = `${BASEURL}/episode/${animeId}`
+    const base = await axios.request(options)
+    const $ = cheerio.load(base.data)
+    const defaultPlayer = $('#pembed iframe').attr('src')
+    const miror = []
+    $('#embed_holder .mirrorstream ul').each((i, el) => {
+      let resolution = $(el).attr('class')
+      let resolutionServer = []
+      $(el)
+        .find('li')
+        .each((j, val) => {
+          let data = $(val).find('a').attr('data-content')
+          let text = $(val).find('a').text().trim()
+          console.log(data, 'data')
+          resolutionServer.push({
+            text,
+            data
+          })
+        })
+      miror.push({
+        resolution,
+        server: resolutionServer
+      })
+    })
 
-    const data = []
-    // const animes = await page.$$('#postbaru .misha_posts_wrap article')
-    const defaultPlayer = await page.$$('#pembed iframe')
-    const src = await page.evaluate((element) => element.getAttribute('src'), defaultPlayer[0])
-    // for (let anime of animes) {
-    //   const title = await anime.evaluate(
-    //     (el) => el.querySelector('.title.less.nlat.entry-title').textContent,
-    //     anime
-    //   )
-    //   data.push(title)
-    //   console.log(title, 'title')
-    // }
-    await browser.close()
-    res.send({ defaultPlayer: src })
+    res.send({
+      defaultPlayer: defaultPlayer ? defaultPlayer : 'kosong bro',
+      decode: JSON.parse(decode),
+      miror
+    })
   } catch (error) {
-    res.send(error)
+    res.send({
+      message: error
+    })
   }
 })
+router.get('/changeServer/:serverId', async (req, res) => {
+  try {
+    const { serverId } = req.params
+    // aa1208d27f29ca340c92c66d1926f13f
+    let url = `https://otakudesu.cloud/wp-admin/admin-ajax.php`
+    const bdy = JSON.parse(atob(serverId))
+    const by = {
+      ...bdy,
+      nonce: 'ca81c19476',
+      action: '2a3505c93b0035d3f455df82bf976b84'
+    }
+    const resp = await axios.post(url, by, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+      }
+    })
+    const HTMLServer = atob(resp.data.data)
+    const $ = cheerio.load(HTMLServer)
 
-// router.get('/anime/:animeId', async (req, res) => {
-//   try {
-//     const { animeId } = req.params
-
-//     let list = []
-//     options.url = `${BASEURL}/episode/${animeId}`
-//     const base = await axios.request(options)
-//     const $ = cheerio.load(base.data)
-//     const defaultPlayer = $('#pembed iframe').attr('src')
-//     const decode = atob('eyJpZCI6MTU2NjAxLCJpIjowLCJxIjoiNzIwcCJ9')
-//     const miror = []
-//     $('#embed_holder .mirrorstream ul').each((i, el) => {
-//       let resolution = $(el).attr('class')
-//       let resolutionServer = []
-//       $(el)
-//         .find('li')
-//         .each((j, val) => {
-//           let data = $(val).find('a').attr('data-content')
-//           let text = $(val).find('a').text()
-//           console.log(data, 'data')
-//           resolutionServer.push({
-//             text,
-//             data
-//           })
-//         })
-//       miror.push({
-//         resolution,
-//         server: resolutionServer
-//       })
-//     })
-
-//     res.send({
-//       defaultPlayer: defaultPlayer ? defaultPlayer : 'kosong bro',
-//       decode: JSON.parse(decode),
-//       miror
-//     })
-//   } catch (error) {
-//     res.send({
-//       message: error
-//     })
-//   }
-// })
+    const srcValue = $('iframe').attr('src')
+    res.send({
+      ok: srcValue
+    })
+  } catch (error) {
+    res.send({
+      message: error
+    })
+  }
+})
 
 router.post('/changeServer', async (req, res) => {
   try {
