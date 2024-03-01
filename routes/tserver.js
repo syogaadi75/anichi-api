@@ -19,9 +19,56 @@ var options = {
 
 router.get('/recent', async (req, res) => {
   try {
+    let ongoing = []
+    let completed = []
+    options.url = `${BASEURL}`
+    const base = await axios.request(options)
+    const $ = cheerio.load(base.data)
+    $('.rapi .venz').each((i, el) => {
+      $(el)
+        .find('ul li')
+        .each((j, val) => {
+          let slug = $(val).find('a').attr('href')?.split('/')[4]
+          if (i === 0) {
+            ongoing.push({
+              slug,
+              title: $(val).find('.thumbz h2.jdlflm').text().trim(),
+              episode: $(val).find('.detpost .epz').text().replace(`Episode`, '').trim(),
+              date: $(val).find('.detpost .newnime').text().trim(),
+              day: $(val).find('.detpost .epztipe').text().trim(),
+              cover: $(val).find('.thumbz img').attr('src')
+            })
+          } else if (i === 1) {
+            completed.push({
+              slug,
+              title: $(val).find('.thumbz h2.jdlflm').text().trim(),
+              episode: $(val).find('.detpost .epz').text().replace(`Episode`, '').trim(),
+              date: $(val).find('.detpost .newnime').text().trim(),
+              day: $(val).find('.detpost .epztipe').text().trim(),
+              cover: $(val).find('.thumbz img').attr('src')
+            })
+          }
+        })
+    })
+
+    res.send({
+      ongoing,
+      completed
+    })
+  } catch (error) {
+    res.send({
+      message: error
+    })
+  }
+})
+router.get('/ongoing', async (req, res) => {
+  try {
     const { page } = req.query
     let list = []
-    options.url = page.toString() === '1' ? `${BASEURL}` : `${BASEURL}/page/${page}}`
+    options.url =
+      page.toString() === '1'
+        ? `${BASEURL}/ongoing-anime`
+        : `${BASEURL}/ongoing-anime/page/${page}}`
     const base = await axios.request(options)
     const $ = cheerio.load(base.data)
     $('.venz ul li').each((i, el) => {
@@ -35,8 +82,65 @@ router.get('/recent', async (req, res) => {
         cover: $(el).find('.thumbz img').attr('src')
       })
     })
+    let maxPage = $('.pagination .pagenavix')
+      .first()
+      .find('a')
+      .filter(function () {
+        let title = $(this).attr('class')
+        return title && title.toLowerCase().indexOf('next page-numbers') === -1
+      })
+      .last()
+      .text()
+      .replace(',', '')
+      .trim()
 
     res.send({
+      page: Number(page),
+      maxPage: Number(maxPage),
+      list
+    })
+  } catch (error) {
+    res.send({
+      message: error
+    })
+  }
+})
+router.get('/completed', async (req, res) => {
+  try {
+    const { page } = req.query
+    let list = []
+    options.url =
+      page.toString() === '1'
+        ? `${BASEURL}/complete-anime`
+        : `${BASEURL}/complete-anime/page/${page}}`
+    const base = await axios.request(options)
+    const $ = cheerio.load(base.data)
+    $('.venz ul li').each((i, el) => {
+      let slug = $(el).find('a').attr('href')?.split('/')[4]
+      list.push({
+        slug,
+        title: $(el).find('.thumbz h2.jdlflm').text().trim(),
+        episode: $(el).find('.detpost .epz').text().replace(`Episode`, '').trim(),
+        date: $(el).find('.detpost .newnime').text().trim(),
+        day: $(el).find('.detpost .epztipe').text().trim(),
+        cover: $(el).find('.thumbz img').attr('src')
+      })
+    })
+    let maxPage = $('.pagination .pagenavix')
+      .first()
+      .find('a')
+      .filter(function () {
+        let title = $(this).attr('class')
+        return title && title.toLowerCase().indexOf('next page-numbers') === -1
+      })
+      .last()
+      .text()
+      .replace(',', '')
+      .trim()
+
+    res.send({
+      page: Number(page),
+      maxPage: Number(maxPage),
       list
     })
   } catch (error) {
@@ -54,7 +158,6 @@ router.get('/anime/:animeId', async (req, res) => {
 
     const slug = animeId
     const cover = $('#venkonten .fotoanime img').attr('src')
-    const banner = $('#venkonten .fotoanime img').attr('src')
     const seasons = []
     const synopsis = []
     $('#venkonten .sinopc p').each((i, el) => {
@@ -114,7 +217,6 @@ router.get('/anime/:animeId', async (req, res) => {
     res.send({
       slug,
       cover,
-      banner,
       synopsis,
       seasons,
       info,
