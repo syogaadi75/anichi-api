@@ -213,6 +213,7 @@ router.get('/anime/:animeId', async (req, res) => {
 
     const slug = animeId
     const cover = $('#venkonten .fotoanime img').attr('src')
+    console.log(cover, 'cover')
     const seasons = []
     const synopsis = []
     $('#venkonten .sinopc p').each((i, el) => {
@@ -228,7 +229,7 @@ router.get('/anime/:animeId', async (req, res) => {
             })
           })
       } else {
-        synopsis.push($(el).text()).trim()
+        synopsis.push($(el).text().trim())
       }
     })
     const info = {}
