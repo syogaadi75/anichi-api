@@ -390,19 +390,21 @@ router.get('/get-video/:animeId', async (req, res) => {
 router.get('/changeServer/:serverId', async (req, res) => {
   try {
     const { serverId } = req.params
-    // aa1208d27f29ca340c92c66d1926f13f
     let url = `https://otakudesu.cloud/wp-admin/admin-ajax.php`
-    const bdy = JSON.parse(atob(serverId))
-    const by = {
-      ...bdy,
-      nonce: 'ca81c19476',
-      action: '2a3505c93b0035d3f455df82bf976b84'
-    }
-    const resp = await axios.post(url, by, {
+    const headers = {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
       }
-    })
+    }
+    const getNonce = await axios.post(url, { action: 'aa1208d27f29ca340c92c66d1926f13f' }, headers)
+    const nonce = getNonce.data.data
+    const bdy = JSON.parse(atob(serverId))
+    const by = {
+      ...bdy,
+      nonce,
+      action: '2a3505c93b0035d3f455df82bf976b84'
+    }
+    const resp = await axios.post(url, by, headers)
     const HTMLServer = atob(resp.data.data)
     const $ = cheerio.load(HTMLServer)
 
@@ -410,37 +412,6 @@ router.get('/changeServer/:serverId', async (req, res) => {
     res.send({
       src: srcValue
     })
-  } catch (error) {
-    res.send({
-      message: error
-    })
-  }
-})
-
-router.post('/changeServer', async (req, res) => {
-  try {
-    const { encryptServer } = req.body
-    const decryptServer = JSON.parse(atob(encryptServer))
-    const body = {
-      id: String(decryptServer.id),
-      i: String(decryptServer.i),
-      q: String(decryptServer.q),
-      nonce: 'faafb321d6',
-      action: '2a3505c93b0035d3f455df82bf976b84'
-    }
-
-    const newoptions = {
-      method: 'post',
-      url: `https://otakudesu.cloud/wp-admin/admin-ajax.php`,
-      data: body,
-      withCredentials: true,
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
-      }
-    }
-    const data = await axios.request(newoptions)
-    res.send({ data })
   } catch (error) {
     res.send({
       message: error
