@@ -213,7 +213,6 @@ router.get('/anime/:animeId', async (req, res) => {
 
     const slug = animeId
     const cover = $('#venkonten .fotoanime img').attr('src')
-    console.log(cover, 'cover')
     const seasons = []
     const synopsis = []
     $('#venkonten .sinopc p').each((i, el) => {
@@ -411,6 +410,54 @@ router.get('/changeServer/:serverId', async (req, res) => {
     const srcValue = $('iframe').attr('src')
     res.send({
       src: srcValue
+    })
+  } catch (error) {
+    res.send({
+      message: error
+    })
+  }
+})
+router.get('/slug-last-eps/:animeId', async (req, res) => {
+  try {
+    const { animeId } = req.params
+    options.url = `${BASEURL}/anime/${animeId}`
+    const base = await axios.request(options)
+    const $ = cheerio.load(base.data)
+    const episodes = []
+    const batch = []
+    $('.episodelist').each((i, val) => {
+      $(val)
+        .find('ul li')
+        .each((j, el) => {
+          let href = $(el).find('a').attr('href')
+          let parts = href.split('/')
+          let slug = parts[4]
+          let title = $(el).find('a').text().trim()
+          let date = $(el).find('.zeebr').text().trim()
+          if (i === 0) {
+            batch.push({
+              slug,
+              title,
+              date
+            })
+          } else if (i === 1) {
+            episodes.push({
+              slug,
+              title,
+              date
+            })
+          }
+        })
+    })
+
+    const episode = {
+      first: episodes[episodes.length - 1],
+      last: episodes[0]
+    }
+
+    res.send({
+      episodes,
+      episode
     })
   } catch (error) {
     res.send({
