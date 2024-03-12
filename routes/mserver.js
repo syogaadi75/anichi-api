@@ -1,9 +1,9 @@
 const express = require('express')
 const axios = require('axios')
 const router = express.Router()
-const BASEURL = 'https://otakudesu.cloud'
-const SECONDBASEURL = 'https://nontonanimeid.buzz'
+const BASEURL = 'http://rebahin.skin'
 const cheerio = require('cheerio')
+const puppeteer = require('puppeteer')
 
 var options = {
   url: null,
@@ -14,44 +14,44 @@ var options = {
   }
 }
 
-router.get('/recent', async (req, res) => {
+router.get('/home', async (req, res) => {
   try {
-    let ongoing = []
-    let completed = []
-    options.url = `${BASEURL}`
-    const base = await axios.request(options)
-    const $ = cheerio.load(base.data)
-    $('.rapi .venz').each((i, el) => {
-      $(el)
-        .find('ul li')
-        .each((j, val) => {
-          let slug = $(val).find('a').attr('href')?.split('/')[4]
-          if (i === 0) {
-            ongoing.push({
-              slug,
-              title: $(val).find('.thumbz h2.jdlflm').text().trim(),
-              episode: $(val).find('.detpost .epz').text().replace(`Episode`, '').trim(),
-              date: $(val).find('.detpost .newnime').text().trim(),
-              day: $(val).find('.detpost .epztipe').text().trim(),
-              cover: $(val).find('.thumbz img').attr('src')
-            })
-          } else if (i === 1) {
-            completed.push({
-              slug,
-              title: $(val).find('.thumbz h2.jdlflm').text().trim(),
-              episode: $(val).find('.detpost .epz').text().replace(`Episode`, '').trim(),
-              date: $(val).find('.detpost .newnime').text().trim(),
-              day: $(val).find('.detpost .epztipe').text().trim(),
-              cover: $(val).find('.thumbz img').attr('src')
-            })
-          }
-        })
+    const browser = await puppeteer.launch({ headless: true })
+    const page = await browser.newPage()
+
+    await page.goto('http://rebahin.skin', { waitUntil: 'networkidle0' })
+
+    const movies = await page.$$('#top-xtab1 .ml-item');
+    const dataMovies = []
+    for(const movie of movies) {
+      const title = await page.evaluate(el => el.querySelector('.mli-info h2').textContent, movie)
+      console.log(title)
+      dataMovies.push(title) 
+    }
+    await browser.close();
+    res.send({
+      data: dataMovies
     })
 
-    res.send({
-      ongoing,
-      completed
-    })
+    // let films = []
+    // options.url = `${BASEURL}`
+    // const base = await axios.request(options)
+    // const $ = cheerio.load(base.data)
+    // console.log($('.tab-content').html(), 'ds')
+    // $('#top-xtab1 .ml-item').each((i, el) => {
+    //   films.push({
+    //     slug: $(el).find('a').attr('href').split('/')[4],
+    //     title: $(el).find('.mli-info h2').text().trim()
+    //     // episode: $(el).find('.detpost .epz').text().replace(`Episode`, '').trim(),
+    //     // date: $(el).find('.detpost .newnime').text().trim(),
+    //     // day: $(el).find('.detpost .epztipe').text().trim(),
+    //     // cover: $(el).find('.thumbz img').attr('src')
+    //   })
+    // })
+
+    // res.send({
+    //   films
+    // })
   } catch (error) {
     res.send({
       message: error

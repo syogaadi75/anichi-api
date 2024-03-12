@@ -5,6 +5,7 @@ const cors = require('cors')
 const fserver = require('./routes/fserver')
 const sserver = require('./routes/sserver')
 const tserver = require('./routes/tserver')
+const mserver = require('./routes/mserver')
 
 const app = express()
 
@@ -15,6 +16,7 @@ app.use(bodyParser.urlencoded())
 app.use('/fserver', fserver)
 app.use('/sserver', sserver)
 app.use('/tserver', tserver)
+app.use('/mserver', mserver)
 app.get('/', (req, res) => {
   res.send('Selamat Datang!')
 })
