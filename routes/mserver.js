@@ -16,20 +16,13 @@ var options = {
 }
 
 router.get('/home', async (req, res) => {
+  const browser = await puppeteer.launch({  
+    executablePath: process.env.NODE_ENV === 'production' ? process.env.PUPPETEER_EXECUTABLE_PATH : puppeteer.executablePath(),
+   })
   try {
-    const browser = await puppeteer.launch({ 
-      args: [
-        "--disable-setuid-sandbox",
-        "--no-sandbox",
-        "--single-process",
-        "--no-zygote"
-      ],
-      executablePath: process.env.NODE_ENV === 'production' ? process.env.PUPPETEER_EXECUTABLE_PATH : puppeteer.executablePath(),
-
-     })
     const page = await browser.newPage()
 
-    await page.goto('http://rebahin.skin', { waitUntil: 'networkidle0' })
+    await page.goto('http://rebahin.skin', { waitUntil: 'networkidle0', "timeout": "300000" })
 
     const movies = await page.$$('#top-xtab1 .ml-item');
     const dataMovies = []
@@ -42,10 +35,9 @@ router.get('/home', async (req, res) => {
     res.send({
       data: dataMovies
     }) 
-  } catch (error) {
-    res.send({
-      message: error
-    })
+  } catch (e) {
+    console.log(e)
+    res.send(e)
   } finally {
     await browser.close();
   }

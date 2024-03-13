@@ -27,6 +27,5 @@
     "puppeteer": "^22.0.0"
   },
   "keywords": [],
-  "repository": "https://github.com/syogaadi75/anichi-api.git",
-  "type":"module"
+  "repository": "https://github.com/syogaadi75/anichi-api.git"
 }

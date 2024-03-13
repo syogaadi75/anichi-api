@@ -6,4 +6,4 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-CMD ["nodemon", "app.js"]
+CMD ["node", "app.js"]
