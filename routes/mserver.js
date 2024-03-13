@@ -4,6 +4,7 @@ const router = express.Router()
 const BASEURL = 'http://rebahin.skin'
 const cheerio = require('cheerio')
 const puppeteer = require('puppeteer')
+require('dotenv').config()
 
 var options = {
   url: null,
@@ -16,7 +17,16 @@ var options = {
 
 router.get('/home', async (req, res) => {
   try {
-    const browser = await puppeteer.launch({ headless: true })
+    const browser = await puppeteer.launch({ 
+      args: [
+        "--disable-setuid-sandbox",
+        "--no-sandbox",
+        "--single-process",
+        "--no-zygote"
+      ],
+      executablePath: process.env.NODE_ENV === 'production' ? process.env.PUPPETEER_EXECUTABLE_PATH : puppeteer.executablePath(),
+
+     })
     const page = await browser.newPage()
 
     await page.goto('http://rebahin.skin', { waitUntil: 'networkidle0' })
@@ -27,35 +37,17 @@ router.get('/home', async (req, res) => {
       const title = await page.evaluate(el => el.querySelector('.mli-info h2').textContent, movie)
       console.log(title)
       dataMovies.push(title) 
-    }
-    await browser.close();
+    } 
+
     res.send({
       data: dataMovies
-    })
-
-    // let films = []
-    // options.url = `${BASEURL}`
-    // const base = await axios.request(options)
-    // const $ = cheerio.load(base.data)
-    // console.log($('.tab-content').html(), 'ds')
-    // $('#top-xtab1 .ml-item').each((i, el) => {
-    //   films.push({
-    //     slug: $(el).find('a').attr('href').split('/')[4],
-    //     title: $(el).find('.mli-info h2').text().trim()
-    //     // episode: $(el).find('.detpost .epz').text().replace(`Episode`, '').trim(),
-    //     // date: $(el).find('.detpost .newnime').text().trim(),
-    //     // day: $(el).find('.detpost .epztipe').text().trim(),
-    //     // cover: $(el).find('.thumbz img').attr('src')
-    //   })
-    // })
-
-    // res.send({
-    //   films
-    // })
+    }) 
   } catch (error) {
     res.send({
       message: error
     })
+  } finally {
+    await browser.close();
   }
 })
 router.post('/search', async (req, res) => {
