@@ -62,6 +62,7 @@ router.get('/recent', async (req, res) => {
   } catch (error) {
     userAgentIndex = (userAgentIndex + 1) % userAgents.length;
     res.send({
+      index: userAgentIndex,
       message: error
     })
   }
