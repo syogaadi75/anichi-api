@@ -1,18 +1,25 @@
 const express = require('express')
 const axios = require('axios')
 const router = express.Router()
-const BASEURL = 'https://otakudesu.cloud'
-const SECONDBASEURL = 'https://nontonanimeid.buzz'
+const BASEURL = 'https://otakudesu.cloud' 
 const cheerio = require('cheerio')
 
 var options = {
   url: null,
   withCredentials: true,
   headers: {
-    'User-Agent':
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Referer': BASEURL,
+    'Connection': 'keep-alive',
+    'Upgrade-Insecure-Requests': '1'
   }
 }
+options.headers['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8';
+options.headers['Accept-Language'] = 'en-US,en;q=0.5';
+options.headers['Referer'] = BASEURL;
 
 router.get('/recent', async (req, res) => {
   try {
