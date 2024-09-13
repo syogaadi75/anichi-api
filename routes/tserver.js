@@ -16,10 +16,7 @@ var options = {
     'Connection': 'keep-alive',
     'Upgrade-Insecure-Requests': '1'
   }
-}
-options.headers['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8';
-options.headers['Accept-Language'] = 'en-US,en;q=0.5';
-options.headers['Referer'] = BASEURL;
+} 
 
 router.get('/recent', async (req, res) => {
   try {
