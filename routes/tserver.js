@@ -5,11 +5,11 @@ const BASEURL = 'https://otakudesu.cloud'
 const cheerio = require('cheerio')
 
 var options = {
-  url: 'https://api.scraperapi.com?api_key=add31ea611a66242d3a693075d6ba923&url=https://otakudesu.cloud',
+  url: null,
   withCredentials: true,
   headers: {
     'User-Agent':
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0'
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
 
   }
 }
