@@ -1,7 +1,7 @@
 const express = require('express')
 const axios = require('axios')
 const router = express.Router()
-const BASEURL = 'http://rebahin.skin'
+const BASEURL = 'http://rebahin.shop'
 const cheerio = require('cheerio')
 const puppeteer = require('puppeteer')
 require('dotenv').config()
@@ -14,34 +14,31 @@ var options = {
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
   }
 }
-
 router.get('/home', async (req, res) => {
-  const browser = await puppeteer.launch({  
-    executablePath: process.env.NODE_ENV === 'production' ? process.env.PUPPETEER_EXECUTABLE_PATH : puppeteer.executablePath(),
-   })
+  const browser = await puppeteer.launch({ headless: true })
   try {
     const page = await browser.newPage()
 
-    await page.goto('http://rebahin.skin', { waitUntil: 'networkidle0', "timeout": "300000" })
+    await page.goto('http://rebahin.shop', { waitUntil: 'networkidle0' })
 
-    const movies = await page.$$('#top-xtab1 .ml-item');
+    const movies = await page.$$('#top-xtab1 .ml-item')
     const dataMovies = []
-    for(const movie of movies) {
-      const title = await page.evaluate(el => el.querySelector('.mli-info h2').textContent, movie)
+    for (const movie of movies) {
+      const title = await page.evaluate((el) => el.querySelector('.mli-info h2').textContent, movie)
       console.log(title)
-      dataMovies.push(title) 
-    } 
-
+      dataMovies.push(title)
+    }
+    await browser.close()
     res.send({
       data: dataMovies
-    }) 
-  } catch (e) {
-    console.log(e)
-    res.send(e)
-  } finally {
-    await browser.close();
+    })
+  } catch (error) {
+    res.send({
+      message: error
+    })
   }
 })
+
 router.post('/search', async (req, res) => {
   try {
     let { anime } = req.body
