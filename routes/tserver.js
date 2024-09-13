@@ -4,12 +4,19 @@ const router = express.Router()
 const BASEURL = 'https://otakudesu.cloud' 
 const cheerio = require('cheerio')
 
+const userAgents = [
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 14.2; rv:109.0) Gecko/20100101 Firefox/121.0',
+  'Mozilla/5.0 (X11; Linux i686; rv:109.0) Gecko/20100101 Firefox/121.0',
+  'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/121.0',
+];
+let userAgentIndex = 0;
 var options = {
   url: null,
   withCredentials: true,
   headers: {
-    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
+    'User-Agent': userAgents[userAgentIndex]
   }
 }
 
@@ -19,6 +26,7 @@ router.get('/recent', async (req, res) => {
     let completed = []
     options.url = `${BASEURL}`
     const base = await axios.request(options)
+    userAgentIndex = (userAgentIndex + 1) % userAgents.length;
     const $ = cheerio.load(base.data)
     $('.rapi .venz').each((i, el) => {
       $(el)
