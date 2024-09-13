@@ -8,10 +8,7 @@ var options = {
   url: null,
   withCredentials: true,
   headers: {
-    ':authority': 'otakudesu.cloud',
-    ':method': 'GET',
-    ':path': '/',
-    ':scheme': 'https',
+    // Removed HTTP/2 pseudo-headers like ":authority", ":method", ":path", ":scheme"
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
     'accept-encoding': 'gzip, deflate, br, zstd',
     'accept-language': 'en-US,en;q=0.9',
