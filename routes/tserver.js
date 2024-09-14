@@ -392,7 +392,7 @@ router.get('/get-video/:animeId', async (req, res) => {
 router.get('/changeServer/:serverId', async (req, res) => {
   try {
     const { serverId } = req.params
-    let url = `https://otakudesu.cloud/wp-admin/admin-ajax.php`
+    let url = BASEURL + `wp-admin/admin-ajax.php`
     const headers = {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
