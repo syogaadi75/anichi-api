@@ -1,7 +1,7 @@
 const express = require('express')
 const axios = require('axios')
 const router = express.Router()
-const BASEURL = 'http://api.scraperapi.com?api_key=add31ea611a66242d3a693075d6ba923&url=https://otakudesu.cloud/' 
+const BASEURL = 'http://api.scraperapi.com?api_key=1250566f96fa702f7ee1024bfddfe318&url=https://otakudesu.cloud/' 
 const cheerio = require('cheerio')
 
 const userAgents = [
