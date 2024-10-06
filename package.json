@@ -9,7 +9,7 @@
     "start": "nodemon app.js"
   },
   "dependencies": {
-    "@sparticuz/chromium-min": "^129.0.0",
+    "@sparticuz/chromium-min": "^127.0.0",
     "axios": "^1.6.7",
     "body-parser": "^1.20.2",
     "cheerio": "^1.0.0-rc.12",
@@ -22,13 +22,10 @@
     "nodemon": "^3.0.3",
     "phantom": "^6.3.0",
     "phantomjs-prebuilt": "^2.1.16",
-    "puppeteer-core": "^22.15.0",
+    "puppeteer-core": "^23.1.1",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
     "zlib": "^1.0.5"
-  },
-  "devDependencies": {
-    "puppeteer": "^22.0.0"
   },
   "keywords": [],
   "repository": "https://github.com/syogaadi75/anichi-api.git"
