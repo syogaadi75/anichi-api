@@ -412,6 +412,9 @@ router.get('/v2/get-video/:animeId', async (req, res) => {
 
     const browser = await getBrowser()
     const page = await browser.newPage() 
+    await page.setUserAgent(userAgents[userAgentIndex]);
+    await page.mouse.move(100, 200); await page.mouse.move(150, 250, { steps: 10 }); await page.keyboard.type('Hello World', { delay: 100 });
+    await page.solveRecaptchas();
     await page.goto(url, { waitUntil: 'networkidle2' })
     const data = await page.evaluate(() => {
       const title = document.querySelector('.venutama h1.posttl')?.textContent.trim(); 
