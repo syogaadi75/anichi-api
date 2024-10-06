@@ -27,7 +27,7 @@ async function getBrowser() {
       process.env.NODE_ENV === 'production'
         ? await chromium.executablePath(`https://github.com/Sparticuz/chromium/releases/download/v127.0.0/chromium-v127.0.0-pack.tar`)
         : path.resolve('C:/Program Files/Google/Chrome/Application/chrome.exe'),
-    headless: chromium.headless || true,
+    headless: chromium.headless,
     ignoreHTTPSErrors: true
   })
 }
@@ -411,100 +411,85 @@ router.get('/v2/get-video/:animeId', async (req, res) => {
     const url = `${BASEURL}/episode/${animeId}`;
 
     const browser = await getBrowser()
-    const page = await browser.newPage()
-    await page.setRequestInterception(true);
-    page.on('request', (request) => {
-      const resourceType = request.resourceType();
-      if (['image', 'stylesheet', 'font'].includes(resourceType)) {
-        request.abort();
-      } else {
-        request.continue();
-      }
-    });
+    const page = await browser.newPage() 
     await page.goto(url, { waitUntil: 'networkidle2' })
- 
-      // Mendapatkan title
-      const title = await page.evaluate(function() {
-        return document.querySelector('.venutama h1.posttl').textContent.trim();
-      });
+    const data = await page.evaluate(() => {
+      const title = document.querySelector('.venutama h1.posttl')?.textContent.trim(); 
+      console.log(title, 'title')
 
-      // Mendapatkan default player
-      const defaultPlayer = await page.evaluate(function() {
-        let iframe = document.querySelector('#pembed iframe');
-        return iframe ? iframe.src : '-';
-      });
+      let iframe = document.querySelector('#pembed iframe');
+      const defaultPlayer = iframe ? iframe.src : '-';
 
       // Mendapatkan server streaming
-      const servers = await page.evaluate(function() {
-        const serverElements = document.querySelectorAll('#embed_holder .mirrorstream ul');
-        return Array.from(serverElements).map((el) => {
-          let resolution = el.className;
-          let resolutionServer = [];
-          el.querySelectorAll('li').forEach((li) => {
-            let data = li.querySelector('a').getAttribute('data-content');
-            let text = li.querySelector('a').textContent.trim();
-            resolutionServer.push({ text, data });
-          });
-          return { resolution, server: resolutionServer };
+      
+      const serverElements = document.querySelectorAll('#embed_holder .mirrorstream ul');
+      const servers =  Array.from(serverElements).map((el) => {
+        let resolution = el.className;
+        let resolutionServer = [];
+        el.querySelectorAll('li').forEach((li) => {
+          let data = li.querySelector('a').getAttribute('data-content');
+          let text = li.querySelector('a')?.textContent.trim();
+          resolutionServer.push({ text, data });
         });
-      });
+        return { resolution, server: resolutionServer };
+      }); 
 
       // Mendapatkan link download
-      const downloads = await page.evaluate(function() {
-        const downloadElements = document.querySelectorAll('.venutama .download ul li');
-        return Array.from(downloadElements).map((li) => {
-          let resolution = li.querySelector('strong').textContent.trim();
-          let server = [];
-          li.querySelectorAll('a').forEach((a) => {
-            let text = a.textContent.trim();
-            let src = a.href;
-            server.push({ text, src });
-          });
-          return { resolution, server };
+      
+      const downloadElements = document.querySelectorAll('.venutama .download ul li');
+      const downloads = Array.from(downloadElements).map((li) => {
+        let resolution = li.querySelector('strong')?.textContent.trim();
+        let server = [];
+        li.querySelectorAll('a').forEach((a) => {
+          let text = a?.textContent.trim();
+          let src = a.href;
+          server.push({ text, src });
         });
-      });
+        return { resolution, server };
+      }); 
 
       // Mendapatkan episode yang direkomendasikan
-      const episodes = await page.evaluate(function() {
-        const episodeElements = document.querySelectorAll('.judul-recommend-anime-series .keyingpost li a');
-        return Array.from(episodeElements).map((a) => {
-          let href = a.href.split('/');
-          let slug = href[4];
-          let text = a.textContent.trim();
-          return { slug, text };
-        });
-      });
+      
+      const episodeElements = document.querySelectorAll('.judul-recommend-anime-series .keyingpost li a');
+      const episodes = Array.from(episodeElements).map((a) => {
+        let href = a.href.split('/');
+        let slug = href[4];
+        let text = a?.textContent.trim();
+        return { slug, text };
+      }); 
 
       // Mendapatkan navigasi prev/next
-      const navigation = await page.evaluate(function() {
-        let prev = { status: false, slug: '' };
-        let next = { status: false, slug: '' };
+      
+      let prev = { status: false, slug: '' };
+      let next = { status: false, slug: '' };
 
-        document.querySelectorAll('.venutama .prevnext .flir a').forEach((el) => {
-          let text = el.getAttribute('title');
-          let href = el.href.split('/');
-          let slug = href[4];
+      document.querySelectorAll('.venutama .prevnext .flir a').forEach((el) => {
+        let text = el.getAttribute('title');
+        let href = el.href.split('/');
+        let slug = href[4];
 
-          if (text === 'Episode Sebelumnya') {
-            prev = { status: true, slug };
-          }
-          if (text === 'Episode Selanjutnya') {
-            next = { status: true, slug };
-          }
-        });
+        if (text === 'Episode Sebelumnya') {
+          prev = { status: true, slug };
+        }
+        if (text === 'Episode Selanjutnya') {
+          next = { status: true, slug };
+        }
+      });
 
-        return { prev, next };
-      });  
+      const navigation = { prev, next }; 
 
-      await browser.close()
-      res.send({
+      return {
         title,
-        defaultPlayer,
+        defaultPlayer: defaultPlayer ? defaultPlayer : '-',
         servers,
         episodes,
         navigation,
         downloads
-      });
+      }
+    }) 
+
+    await browser.close()
+    res.send(data);
     
   } catch (error) {
     console.error(error)
