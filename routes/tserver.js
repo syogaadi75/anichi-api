@@ -4,8 +4,7 @@ const router = express.Router()
 const BASEURL = 'https://otakudesu.cloud' 
 const cheerio = require('cheerio') 
 const chromium = require('@sparticuz/chromium-min')
-const puppeteer = require('puppeteer-extra');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+const puppeteer = require('puppeteer-core'); 
 const path = require('path')
 
 const userAgents = [
@@ -20,9 +19,7 @@ var options = {
   }
 } 
 
-async function getBrowser() {
-  // Menggunakan stealth plugin
-  puppeteer.use(StealthPlugin());
+async function getBrowser() { 
   return puppeteer.launch({
     args: [...chromium.args, '--hide-scrollbars', '--disable-web-security'],
     defaultViewport: chromium.defaultViewport,
