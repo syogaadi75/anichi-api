@@ -9,6 +9,7 @@
     "start": "nodemon app.js"
   },
   "dependencies": {
+    "@sparticuz/chromium-min": "^129.0.0",
     "axios": "^1.6.7",
     "body-parser": "^1.20.2",
     "cheerio": "^1.0.0-rc.12",
@@ -19,7 +20,9 @@
     "https-proxy-agent": "^7.0.5",
     "jsdom": "^24.0.0",
     "nodemon": "^3.0.3",
-    "puppeteer-core": "^22.1.0",
+    "phantom": "^6.3.0",
+    "phantomjs-prebuilt": "^2.1.16",
+    "puppeteer-core": "^22.15.0",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
     "zlib": "^1.0.5"

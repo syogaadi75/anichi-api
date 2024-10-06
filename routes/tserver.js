@@ -1,8 +1,11 @@
 const express = require('express')
 const axios = require('axios')
 const router = express.Router()
-const BASEURL = 'http://api.scraperapi.com?api_key=1250566f96fa702f7ee1024bfddfe318&url=https://otakudesu.cloud/' 
-const cheerio = require('cheerio')
+const BASEURL = 'https://otakudesu.cloud' 
+const cheerio = require('cheerio') 
+const chromium = require('@sparticuz/chromium-min')
+const puppeteer = require('puppeteer-core')
+const path = require('path')
 
 const userAgents = [
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
@@ -14,6 +17,19 @@ var options = {
   headers: {
     'User-Agent': userAgents[userAgentIndex]
   }
+}
+
+async function getBrowser() {
+  return puppeteer.launch({
+    args: [...chromium.args, '--hide-scrollbars', '--disable-web-security'],
+    defaultViewport: chromium.defaultViewport,
+    executablePath:
+      process.env.NODE_ENV === 'production'
+        ? await chromium.executablePath(`https://github.com/Sparticuz/chromium/releases/download/v127.0.0/chromium-v127.0.0-pack.tar`)
+        : path.resolve('C:/Program Files/Google/Chrome/Application/chrome.exe'),
+    headless: chromium.headless || true,
+    ignoreHTTPSErrors: true
+  })
 }
 
 router.get('/recent', async (req, res) => {
@@ -294,7 +310,7 @@ router.get('/get-video/:animeId', async (req, res) => {
     const { animeId } = req.params
     options.url = `${BASEURL}/episode/${animeId}`
     const base = await axios.request(options)
-    const $ = cheerio.load(base.data)
+    const $ = cheerio.load(base.data) 
 
     const title = $('.venutama h1.posttl').text().trim()
     const defaultPlayer = $('#pembed iframe').attr('src')
@@ -389,6 +405,112 @@ router.get('/get-video/:animeId', async (req, res) => {
     })
   }
 })
+router.get('/v2/get-video/:animeId', async (req, res) => {
+  try {
+    const { animeId } = req.params;
+    const url = `${BASEURL}/episode/${animeId}`;
+
+    const browser = await getBrowser()
+    const page = await browser.newPage()
+    await page.setRequestInterception(true);
+    page.on('request', (request) => {
+      const resourceType = request.resourceType();
+      if (['image', 'stylesheet', 'font'].includes(resourceType)) {
+        request.abort();
+      } else {
+        request.continue();
+      }
+    });
+    await page.goto(url, { waitUntil: 'networkidle2' })
+ 
+      // Mendapatkan title
+      const title = await page.evaluate(function() {
+        return document.querySelector('.venutama h1.posttl').textContent.trim();
+      });
+
+      // Mendapatkan default player
+      const defaultPlayer = await page.evaluate(function() {
+        let iframe = document.querySelector('#pembed iframe');
+        return iframe ? iframe.src : '-';
+      });
+
+      // Mendapatkan server streaming
+      const servers = await page.evaluate(function() {
+        const serverElements = document.querySelectorAll('#embed_holder .mirrorstream ul');
+        return Array.from(serverElements).map((el) => {
+          let resolution = el.className;
+          let resolutionServer = [];
+          el.querySelectorAll('li').forEach((li) => {
+            let data = li.querySelector('a').getAttribute('data-content');
+            let text = li.querySelector('a').textContent.trim();
+            resolutionServer.push({ text, data });
+          });
+          return { resolution, server: resolutionServer };
+        });
+      });
+
+      // Mendapatkan link download
+      const downloads = await page.evaluate(function() {
+        const downloadElements = document.querySelectorAll('.venutama .download ul li');
+        return Array.from(downloadElements).map((li) => {
+          let resolution = li.querySelector('strong').textContent.trim();
+          let server = [];
+          li.querySelectorAll('a').forEach((a) => {
+            let text = a.textContent.trim();
+            let src = a.href;
+            server.push({ text, src });
+          });
+          return { resolution, server };
+        });
+      });
+
+      // Mendapatkan episode yang direkomendasikan
+      const episodes = await page.evaluate(function() {
+        const episodeElements = document.querySelectorAll('.judul-recommend-anime-series .keyingpost li a');
+        return Array.from(episodeElements).map((a) => {
+          let href = a.href.split('/');
+          let slug = href[4];
+          let text = a.textContent.trim();
+          return { slug, text };
+        });
+      });
+
+      // Mendapatkan navigasi prev/next
+      const navigation = await page.evaluate(function() {
+        let prev = { status: false, slug: '' };
+        let next = { status: false, slug: '' };
+
+        document.querySelectorAll('.venutama .prevnext .flir a').forEach((el) => {
+          let text = el.getAttribute('title');
+          let href = el.href.split('/');
+          let slug = href[4];
+
+          if (text === 'Episode Sebelumnya') {
+            prev = { status: true, slug };
+          }
+          if (text === 'Episode Selanjutnya') {
+            next = { status: true, slug };
+          }
+        });
+
+        return { prev, next };
+      });  
+
+      await browser.close()
+      res.send({
+        title,
+        defaultPlayer,
+        servers,
+        episodes,
+        navigation,
+        downloads
+      });
+    
+  } catch (error) {
+    console.error(error)
+    res.status(500).send('Something went wrong')
+  }
+});
 router.get('/changeServer/:serverId', async (req, res) => {
   try {
     const { serverId } = req.params
