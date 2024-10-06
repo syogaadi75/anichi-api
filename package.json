@@ -23,6 +23,8 @@
     "phantom": "^6.3.0",
     "phantomjs-prebuilt": "^2.1.16",
     "puppeteer-core": "^23.1.1",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
     "zlib": "^1.0.5"

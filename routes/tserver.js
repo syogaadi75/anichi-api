@@ -4,7 +4,8 @@ const router = express.Router()
 const BASEURL = 'https://otakudesu.cloud' 
 const cheerio = require('cheerio') 
 const chromium = require('@sparticuz/chromium-min')
-const puppeteer = require('puppeteer-core')
+const puppeteer = require('puppeteer-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const path = require('path')
 
 const userAgents = [
@@ -17,9 +18,11 @@ var options = {
   headers: {
     'User-Agent': userAgents[userAgentIndex]
   }
-}
+} 
 
 async function getBrowser() {
+  // Menggunakan stealth plugin
+  puppeteer.use(StealthPlugin());
   return puppeteer.launch({
     args: [...chromium.args, '--hide-scrollbars', '--disable-web-security'],
     defaultViewport: chromium.defaultViewport,
@@ -308,7 +311,7 @@ router.get('/anime/:animeId', async (req, res) => {
 router.get('/get-video/:animeId', async (req, res) => {
   try {
     const { animeId } = req.params
-    options.url = `${BASEURL}/episode/${animeId}`
+    options.url = `http://api.scraperapi.com?api_key=1250566f96fa702f7ee1024bfddfe318&url=https://otakudesu.cloud/episode/${animeId}`
     const base = await axios.request(options)
     const $ = cheerio.load(base.data) 
 
@@ -404,7 +407,7 @@ router.get('/get-video/:animeId', async (req, res) => {
       message: error
     })
   }
-})
+}) 
 router.get('/v2/get-video/:animeId', async (req, res) => {
   try {
     const { animeId } = req.params;
@@ -413,11 +416,44 @@ router.get('/v2/get-video/:animeId', async (req, res) => {
     const browser = await getBrowser()
     const page = await browser.newPage() 
     await page.setUserAgent(userAgents[userAgentIndex]);
-    await page.mouse.move(100, 200); await page.mouse.move(150, 250, { steps: 10 }); await page.keyboard.type('Hello World', { delay: 100 }); 
-    await page.goto(url, { waitUntil: 'networkidle2' })
+    await page.setCookie(
+      {
+        name: '_ga',
+        value: 'GA1.2.838410536.1728188563',
+        domain: 'otakudesu.cloud'
+      },
+      {
+        name: '_gid',
+        value: 'GA1.2.722950121.1728188563',
+        domain: 'otakudesu.cloud'
+      },
+      {
+        name: 'cf_clearance',
+        value: '7RKTHJCSHDPx8abVDgKNepfkGgZoX6A761gemroMW_g-1728193170-1.2.1.1-H4ZvvqarA4rAvM0XbyKB_ZolGnG99NX9wyVxY_7jPwJYlYfUiMRelRgwDaaUogP62eIkPArzJ4AX0Fj_FmEJXx43TSuVUe84VlhOdYUgyQjAgCm3_FTTrc9sTMDN6jD5aHNlSXPRcU_DdF65uu4p4zFwFmbRpVWC4GT_aF3EfKFPQeMaiocKnTiq.gudbyq1VlJOTNAar6OTqz8wyXjDchUpYBECYU3qCn_adFWj.yDUiErlvAijQuopy6i09tGxG1WyPkaI.XqweKRy_CHO7ISq7Lony.7xey1wbk_64CbpLtPCKjV2L8sIXEqYmtYLGDVnI3q6CU46X2wkpRkfH9JgETgAgwZ2JqAh2YeF9TjsYlpYtfHATOMGUeoaVal0elykxJUhmsq8I1ZV.cfd2anD8wvFkMTz8GU31dR4M1rG_HwZcfHyvAgXf3Sd9AVh',
+        domain: 'otakudesu.cloud'
+      },
+      {
+        name: '_gat',
+        value: '1',
+        domain: 'otakudesu.cloud'
+      },
+      {
+        name: '_ga_025LZFQCB2',
+        value: 'GS1.2.1728193177.2.0.1728193177.0.0.0',
+        domain: 'otakudesu.cloud'
+      }
+    );
+
+    await page.goto(url, { waitUntil: 'networkidle2' }) 
+    page.on('console', async e => {
+      const args = await Promise.all(e.args().map(a => a.jsonValue()));
+      console.log(...args);
+    });
+
+    const body = await page.evaluate(() => document.body.innerHTML);
+    res.send(body);
     const data = await page.evaluate(() => {
       const title = document.querySelector('.venutama h1.posttl')?.textContent.trim(); 
-      console.log(title, 'title')
 
       let iframe = document.querySelector('#pembed iframe');
       const defaultPlayer = iframe ? iframe.src : '-';
