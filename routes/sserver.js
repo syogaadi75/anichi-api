@@ -82,7 +82,8 @@ router.get('/v2/home', async (req, res) => {
 
     const browser = await getBrowser()
     const page = await browser.newPage() 
-    await page.goto(options.url, { waitUntil: 'networkidle2' }) 
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36');
+    await page.goto(options.url) 
     page.on('console', async e => {
       const args = await Promise.all(e.args().map(a => a.jsonValue()));
       console.log(...args);
