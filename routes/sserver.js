@@ -277,7 +277,7 @@ router.get('/detail', async (req, res) => {
       })
     })
     detail_anime.genre = genre;
-    detail_anime.sinposis = $(".bixbox.synp .entry-content").text().trim();
+    detail_anime.sinopsis = $(".bixbox.synp .entry-content").text().trim();
 
     const episodes = [] 
 
@@ -477,7 +477,7 @@ router.get('/video', async (req, res) => {
       })
     })
     detail_anime.genre = genre;
-    detail_anime.sinposis = $(".single-info.bixbox .desc.mindes").text().trim();
+    detail_anime.sinopsis = $(".single-info.bixbox .desc.mindes").text().trim();
 
     const popular = {
       weekly: [],
