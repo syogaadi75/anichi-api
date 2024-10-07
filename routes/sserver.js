@@ -15,12 +15,17 @@ const userAgents = [
 let userAgentIndex = 0;
 var options = {
   url: null,
+  withCredentials: true,
+  headers: {
+    'User-Agent': userAgents[userAgentIndex],
+    'Referer': 'https://www.google.com/',
+  }
 }  
 
 router.get('/home', async (req, res) => {
   try {
     let animes = []
-    options.url = `${BASEURL}https://s1.nontonanimeid.boats`
+    options.url = `https://s1.nontonanimeid.boats`
     const base = await axios.request(options)
     const $ = cheerio.load(base.data)
     $('#postbaru .misha_posts_wrap article').each((i, el) => {
