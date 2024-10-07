@@ -611,4 +611,26 @@ router.get('/slug-last-eps/:animeId', async (req, res) => {
   }
 })
 
+router.get('/test', (req, res) => { 
+  fetch('http://localhost:3000/cf-clearance-scraper', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        url: 'https://otakudesu.cloud/episode/wpoiec-episode-1121-sub-indo/',
+        mode: "source" 
+    })
+})
+    .then(res => res.json())
+    .then(json => {
+      // const $ = cheerio.load(json.source) 
+
+      // const title = $('.venutama h1.posttl').text().trim()
+      // console.log(title, 'title')
+      res.send(json)
+    })
+    .catch(console.log);
+})
+
 module.exports = router

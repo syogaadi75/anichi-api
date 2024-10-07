@@ -6,29 +6,47 @@ var request = require('request')
 const zlib = require('zlib')
 const jsdom = require('jsdom')
 
-const BASEURL = 'https://animex.biz.id'
+const BASEURL = 'https://s1.nontonanimeid.boats'
 
 // axios.defaults.validateStatus = () => true
-
-const userAgentList = [
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
-]
-
+const userAgents = [
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
+];
+let userAgentIndex = 0;
 var options = {
   url: null,
   withCredentials: true,
   headers: {
-    'User-Agent':
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+    'User-Agent': userAgents[userAgentIndex]
   }
-}
+}  
+
+router.get('/home', async (req, res) => {
+  try {
+    let animes = []
+    options.url = `${BASEURL}`
+    const base = await axios.request(options)
+    const $ = cheerio.load(base.data)
+    $('#postbaru .misha_posts_wrap article').each((i, el) => {
+      let slug = $(el).find('a').attr('href') 
+      animes.push({
+        slug,
+        title: $(el).find('h3.title').text().trim(),
+        episode: $(el).find('.types.episodes').text().trim(),
+        cover: $(el).find('img').attr('src')
+      }) 
+    })
+    
+    res.send(animes)
+  } catch (error) {
+    userAgentIndex = (userAgentIndex + 1) % userAgents.length;
+    res.send({
+      index: userAgentIndex,
+      agent: userAgents[userAgentIndex],
+      message: error
+    })
+  }
+})
 
 router.post('/search', async (req, res) => {
   try {
