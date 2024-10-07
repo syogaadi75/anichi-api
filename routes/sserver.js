@@ -6,8 +6,26 @@ var request = require('request')
 const zlib = require('zlib')
 const jsdom = require('jsdom')
 const https = require('https');
+const chromium = require('@sparticuz/chromium-min')
+const puppeteer = require('puppeteer-core'); 
+const path = require('path')
+
 
 const BASEURL = 'https://api.scraperapi.com/?api_key=6bfa7c860fb506b663c33ec60132cae1&url='
+
+
+async function getBrowser() { 
+  return puppeteer.launch({
+    args: [...chromium.args, '--hide-scrollbars', '--disable-web-security'],
+    defaultViewport: chromium.defaultViewport,
+    executablePath:
+      process.env.NODE_ENV === 'production'
+        ? await chromium.executablePath(`https://github.com/Sparticuz/chromium/releases/download/v127.0.0/chromium-v127.0.0-pack.tar`)
+        : path.resolve('C:/Program Files/Google/Chrome/Application/chrome.exe'),
+    headless: chromium.headless,
+    ignoreHTTPSErrors: true
+  })
+}
 
 // axios.defaults.validateStatus = () => true
 const userAgents = [
@@ -53,6 +71,39 @@ router.get('/home', async (req, res) => {
     res.status(500).send({
       index: userAgentIndex,
       agent: userAgents[userAgentIndex],
+      message: error.message // Mengirim pesan error untuk debugging
+    });
+  }
+});
+
+router.get('/v2/home', async (req, res) => {
+  try { 
+    options.url = `https://s1.nontonanimeid.boats`;
+
+    const browser = await getBrowser()
+    const page = await browser.newPage() 
+    await page.goto(options.url, { waitUntil: 'networkidle2' }) 
+    page.on('console', async e => {
+      const args = await Promise.all(e.args().map(a => a.jsonValue()));
+      console.log(...args);
+    });
+
+    const animes = await page.evaluate(() => {
+      const data = []
+      document.querySelectorAll('#postbaru .misha_posts_wrap article').forEach((el) => {
+        let slug = el.querySelector('a').getAttribute('href');
+        data.push({
+          slug,
+          title: el.querySelector('h3.title').textContent.trim(),
+          episode: el.querySelector('.types.episodes').textContent.trim(),
+          cover: el.querySelector('img').getAttribute('src')
+        });
+      });
+      return data
+    });
+    res.send(animes);
+  } catch (error) { 
+    res.status(500).send({ 
       message: error.message // Mengirim pesan error untuk debugging
     });
   }
