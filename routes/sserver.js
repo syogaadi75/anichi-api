@@ -67,17 +67,11 @@ router.get('/home', async (req, res) => {
     
     $('.listupd.normal .excstf article').each((i, el) => {
       let slug = $(el).find('a').attr('href');
-      let cover = '';
-      $('img').each((j, val) => {
-        if(!$(val).attr('src').includes('data:image')) {
-          cover = $(val).attr('src');
-        }
-      })
       animes.push({
         slug,
         title: $(el).find('.tt h2').text().trim(),
         episode: $(el).find('.bt .epx').text().trim(),
-        cover
+        cover: $(el).find('img').attr('data-lazy-src').replace('?resize=247,350', '')
       });
     }); 
 
