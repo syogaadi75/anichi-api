@@ -151,7 +151,8 @@ router.get('/home', async (req, res) => {
 router.get('/search', async (req, res) => {
   try {
     let animes = [];
-    options.url = req.query.url;
+    const url = req.query.url
+    options.url = atob(url)
 
     // Menggunakan User-Agent saat ini
     options.headers['User-Agent'] = userAgents[userAgentIndex];
