@@ -41,6 +41,19 @@ var options = {
   }
 };
 
+router.get('/get-url', async (req, res) => {
+  try { 
+    const url = `https://samehadaku.today`; 
+
+    res.send(url);
+  } catch (error) { 
+
+    res.status(500).send({ 
+      message: error.message  
+    });
+  }
+}); 
+
 router.get('/home', async (req, res) => {
   try {
     let animes = [];
@@ -62,57 +75,41 @@ router.get('/home', async (req, res) => {
       })
       animes.push({
         slug,
-        title: $(el).find('.tt').text().trim(),
+        title: $(el).find('.tt h2').text().trim(),
         episode: $(el).find('.bt .epx').text().trim(),
         cover
       });
-    });
+    }); 
 
-    res.send(animes);
-  } catch (error) {
-    // Ganti User-Agent jika terjadi error
-    userAgentIndex = (userAgentIndex + 1) % userAgents.length;
-    options.headers['User-Agent'] = userAgents[userAgentIndex];
-
-    res.status(500).send({
-      index: userAgentIndex,
-      agent: userAgents[userAgentIndex],
-      message: error.message // Mengirim pesan error untuk debugging
-    });
-  }
-}); 
-
-router.get('/video', async (req, res) => {
-  try { 
-    options.url = `https://samehadaku.today/blue-lock-season-2-episode-1-sub-indonesia`;
-
-    // Menggunakan User-Agent saat ini
-    options.headers['User-Agent'] = userAgents[userAgentIndex];
-
-    const base = await axios.request(options);
-    const $ = cheerio.load(base.data);
-    
-    let mainServer = $("#embed_holder #pembed iframe").attr('data-lazy-src');
-    let listServer = [];
-    $(".item.video-nav .mobius select option").each((i, el) => {
-      if($(el).attr('value') != '') { 
-        let base64Value = $(el).attr('value'); 
-        let decodedValue = atob(base64Value); 
-        const regex = /src="([^"]+)"/;
-        const match = decodedValue.match(regex);
-        let iframeSrc = match ? match[1] : null;
-
-        listServer.push({
-          server: $(el).text().trim(),
-          src: iframeSrc
-        });
+    const popular = {
+      weekly: [],
+      monthly: [],
+      alltime: []
+    }
+    $("#wpop-items .serieslist").each((i, el) => {
+      let key = '';
+      if(i === 0) {
+        key = 'weekly';
+      } else if(i === 1) {
+        key = 'monthly';
+      } else if(i === 2) {
+        key = 'alltime';
       }
+
+      $(el).find('ul li').each((j, val) => {
+        popular[key].push({
+          title: $(val).find(".leftseries h4 a").text().trim(),
+          slug: $(val).find(".leftseries h4 a").attr('href'),
+          cover: $(val).find(".imgseries img").attr('data-lazy-src').replace('?resize=65,85', '')
+        }) 
+      })
     });
 
     const data = {
-      mainServer,
-      listServer
+      animes,
+      popular
     }
+
     res.send(data);
   } catch (error) {
     // Ganti User-Agent jika terjadi error
@@ -127,41 +124,403 @@ router.get('/video', async (req, res) => {
   }
 }); 
 
-router.get('/v2/home', async (req, res) => {
-  try { 
-    options.url = `https://s1.nontonanimeid.boats?__cf_chl_rt_tk=_e0TSt3bOpije8xhykE4sfPorqqktt9UOXpzSm4AemU-1728280855-0.0.1.1-7124`;
+router.get('/search', async (req, res) => {
+  try {
+    let animes = [];
+    options.url = req.query.url;
 
-    const browser = await getBrowser()
-    const page = await browser.newPage() 
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36');
-    await page.goto(options.url) 
-    page.on('console', async e => {
-      const args = await Promise.all(e.args().map(a => a.jsonValue()));
-      console.log(...args);
+    // Menggunakan User-Agent saat ini
+    options.headers['User-Agent'] = userAgents[userAgentIndex];
+
+    const base = await axios.request(options);
+    const $ = cheerio.load(base.data);
+    
+    $('.listupd article').each((i, el) => {
+      let slug = $(el).find('a').attr('href');
+      let cover = '';
+      $('img').each((j, val) => {
+        if(!$(val).attr('src').includes('data:image')) {
+          cover = $(val).attr('src');
+        }
+      })
+      animes.push({
+        slug,
+        title: $(el).find('.tt h2').text().trim(),
+        episode: $(el).find('.bt .epx').text().trim(),
+        cover
+      });
     });
 
-    // const animes = await page.evaluate(() => {
-    //   const data = []
-    //   document.querySelectorAll('#postbaru .misha_posts_wrap article').forEach((el) => {
-    //     let slug = el.querySelector('a').getAttribute('href');
-    //     data.push({
-    //       slug,
-    //       title: el.querySelector('h3.title').textContent.trim(),
-    //       episode: el.querySelector('.types.episodes').textContent.trim(),
-    //       cover: el.querySelector('img').getAttribute('src')
-    //     });
-    //   });
-    //   return data
-    // });
-    const body = await page.evaluate(() => document.body.innerHTML);
-    res.send(body);
-    // res.send(page);
-  } catch (error) { 
-    res.status(500).send({ 
+    const pagination = {
+      next: {
+        status: false,
+        slug: ''
+      },
+      prev: {
+        status: false,
+        slug: ''
+      },
+      list: []
+    };
+    $(".pagination .page-numbers").each((i, el) => {
+      if($(el).text().includes('Sebelumnya')) {
+        pagination.prev = {
+          status: true,
+          slug: $(el).attr('href')
+        };
+      } else if($(el).text().includes('Berikutnya')) {
+        pagination.next = {
+          status: true,
+          slug: $(el).attr('href')
+        };
+      } else {
+        if($(el).text() == '…') {} else {
+          if($(el).attr('aria-current') == 'page') {
+            pagination.list.push({
+              slug: $(el).attr('href') || '',
+              title: $(el).text(),
+              current: true
+            });
+          } else {
+            pagination.list.push({
+              slug: $(el).attr('href') || '',
+              title: $(el).text(),
+              current: false
+            });
+          }
+        }
+      }
+    })
+
+    const popular = {
+      weekly: [],
+      monthly: [],
+      alltime: []
+    }
+    $("#wpop-items .serieslist").each((i, el) => {
+      let key = '';
+      if(i === 0) {
+        key = 'weekly';
+      } else if(i === 1) {
+        key = 'monthly';
+      } else if(i === 2) {
+        key = 'alltime';
+      }
+
+      $(el).find('ul li').each((j, val) => {
+        popular[key].push({
+          title: $(val).find(".leftseries h4 a").text().trim(),
+          slug: $(val).find(".leftseries h4 a").attr('href'),
+          cover: $(val).find(".imgseries img").attr('src')?.replace('?resize=65,85', '')
+        }) 
+      })
+    });
+
+    const data = {
+      animes,
+      pagination,
+      popular
+    }
+
+    res.send(data);
+  } catch (error) {
+    // Ganti User-Agent jika terjadi error
+    userAgentIndex = (userAgentIndex + 1) % userAgents.length;
+    options.headers['User-Agent'] = userAgents[userAgentIndex];
+
+    res.status(500).send({
+      index: userAgentIndex,
+      agent: userAgents[userAgentIndex],
       message: error.message // Mengirim pesan error untuk debugging
     });
   }
-});
+}); 
+
+router.get('/detail', async (req, res) => {
+  try { 
+    options.url = req.query.url
+
+    // Menggunakan User-Agent saat ini
+    options.headers['User-Agent'] = userAgents[userAgentIndex];
+
+    const base = await axios.request(options);
+    const $ = cheerio.load(base.data); 
+
+    const detail_anime = {}; 
+    detail_anime.cover = $(".bigcontent .thumb img").attr('data-lazy-src').replace('?resize=247,350', '');
+    detail_anime.title = $(".bigcontent .infox .entry-title").text().trim();
+    detail_anime.information = $(".bigcontent .infox .ninfo .alter").text().trim();
+    detail_anime.rating = $(".bigcontent .rating").text().trim();
+
+    $(".bigcontent .infox .info-content span").each(function() {
+      const key = $(this).find('b').text().replace(':', '').trim().toLowerCase();
+      $(this).find('b').remove(); 
+      let value = $(this).text().trim(); 
+
+      if ($(this).find('a').length) {
+        value = $(this).find('a').map((i, el) => $(el).text().trim()).get().join(', ');
+      }
+      
+      if(key) {
+        detail_anime[key] = value;
+      }
+    })
+
+    const genre = []
+    $(".bigcontent .genxed a").each(function() {
+      genre.push({
+        title: $(this).text().trim(),
+        slug: $(this).attr('href')
+      })
+    })
+    detail_anime.genre = genre;
+    detail_anime.sinposis = $(".bixbox.synp .entry-content").text().trim();
+
+    const episodes = [] 
+
+    $(".eplister ul li").each((i, el) => {
+      episodes.push({
+        slug: $(el).find('a').attr('href'),
+        title: $(el).find('.epl-title').text().trim(),
+        released_at: $(el).find('.epl-date').text().trim(),
+      })
+    })
+
+    const popular = {
+      weekly: [],
+      monthly: [],
+      alltime: []
+    }
+    $("#wpop-items .serieslist").each((i, el) => {
+      let key = '';
+      if(i === 0) {
+        key = 'weekly';
+      } else if(i === 1) {
+        key = 'monthly';
+      } else if(i === 2) {
+        key = 'alltime';
+      }
+
+      $(el).find('ul li').each((j, val) => {
+        popular[key].push({
+          title: $(val).find(".leftseries h4 a").text().trim(),
+          slug: $(val).find(".leftseries h4 a").attr('href'),
+          cover: $(val).find(".imgseries img").attr('data-lazy-src').replace('?resize=65,85', '')
+        }) 
+      })
+    });
+
+    const data = { 
+      detail_anime,
+      episodes,
+      popular
+    }
+    res.send(data);
+  } catch (error) {
+    // Ganti User-Agent jika terjadi error
+    userAgentIndex = (userAgentIndex + 1) % userAgents.length;
+    options.headers['User-Agent'] = userAgents[userAgentIndex];
+
+    res.status(500).send({
+      index: userAgentIndex,
+      agent: userAgents[userAgentIndex],
+      message: error.message // Mengirim pesan error untuk debugging
+    });
+  }
+});  
+
+router.get('/video', async (req, res) => {
+  try { 
+    options.url = req.query.url
+
+    // Menggunakan User-Agent saat ini
+    options.headers['User-Agent'] = userAgents[userAgentIndex];
+
+    const base = await axios.request(options);
+    const $ = cheerio.load(base.data);
+
+    const title = $(".item.meta .lm h1.entry-title").text().trim();
+    const released_at = $(".item.meta .lm .year .updated").text().trim();
+    
+    let main_server = $("#embed_holder #pembed iframe").attr('data-lazy-src');
+    let list_server = [];
+    $(".item.video-nav .mobius select option").each((i, el) => {
+      if($(el).attr('value') != '') { 
+        let base64Value = $(el).attr('value'); 
+        let decodedValue = atob(base64Value); 
+        const regex = /src="([^"]+)"/;
+        const match = decodedValue.match(regex);
+        let iframeSrc = match ? match[1] : null;
+
+        list_server.push({
+          server: $(el).text().trim(),
+          src: iframeSrc
+        });
+      }
+    });
+
+    let next = {
+      status: false,
+      slug: ''
+    };
+    let prev = {
+      status: false,
+      slug: ''
+    };
+    let detail_anime_slug = null;
+    $(".mvelement .naveps.bignav .nvs").each((i, el) => {
+      if(i === 0) { 
+        if($(el).find('span.nolink').length > 0) {
+          prev.status = false;
+          prev.slug = '';
+        } else {
+          prev.status = true;
+          prev.slug = $(el).find('a').attr('href');
+        }
+      } else if(i === 1) {
+        detail_anime_slug = $(el).find('a').attr('href');
+      } else if (i === 2) {
+        if($(el).find('span.nolink').length > 0) {
+          next.status = false;
+          next.slug = '';
+        } else {
+          next.status = true;
+          next.slug = $(el).find('a').attr('href');
+        }
+      }
+    })
+
+    const episodes = {
+      head: {},
+      list: [],
+    };
+
+    const text = $(".headlist .det span").text();
+    const ongoingText = $(".headlist .det span i").text(); 
+    const formattedText = text.replace(ongoingText + ' - ', ' - ').trim();
+
+
+    episodes.head.cover = $(".headlist .thumb img").attr('data-lazy-src').replace('?resize=84,98', '');
+    episodes.head.title = $(".headlist .det h2 a").text().trim();
+    episodes.head.information = `${ongoingText} ${formattedText}`.replace(' - ?', ' 1');
+
+    $(".episodelist ul li").each((i, el) => {
+      episodes.list.push({
+        slug: $(el).find('a').attr('href'),
+        title: $(el).find('.playinfo h3').text().trim(),
+        released_at: $(el).find('.playinfo span').text().trim(),
+        cover: $(el).find('.thumbnel img').attr('data-lazy-src').replace('?resize=130,130', '')
+      })
+    });
+
+    const downloads = [];
+    $(".bixbox.mctn .soraddlx.soradlg").each((i, el) => {
+      $(el).each((j, val) => {
+        let download = {
+          title: '',
+          servers: []
+        }
+        if(j === 0) {
+          download.title = $(val).find('h3').text().trim();
+        }
+        let links = [];
+        $(val).find('a').each((k, value) => {
+          links.push({
+            name: $(value).text().trim(),
+            src: $(value).attr('href')
+          });
+        });
+
+        download.servers.push({
+          resolution: $(val).find('strong').text().trim(),
+          links
+        })
+
+        downloads.push(download);
+      });
+    }); 
+
+    const detail_anime = {};
+    detail_anime.slug = detail_anime_slug;
+    detail_anime.cover = $(".single-info.bixbox .thumb img").attr('data-lazy-src').replace('?resize=247,350', '');
+    detail_anime.title = $(".single-info.bixbox .infox .infolimit h2").text().trim();
+    detail_anime.information = $(".single-info.bixbox .infox .infolimit span").text().trim();
+    detail_anime.rating = $(".single-info.bixbox .infox .rating strong").text().trim();
+
+    $(".single-info.bixbox .infox .info-content span").each(function() {
+      const key = $(this).find('b').text().replace(':', '').trim().toLowerCase();
+      $(this).find('b').remove(); 
+      let value = $(this).text().trim(); 
+
+      if ($(this).find('a').length) {
+        value = $(this).find('a').map((i, el) => $(el).text().trim()).get().join(', ');
+      }
+      
+      if(key) {
+        detail_anime[key] = value;
+      }
+    })
+
+    const genre = []
+    $(".single-info.bixbox .genxed a").each(function() {
+      genre.push({
+        title: $(this).text().trim(),
+        slug: $(this).attr('href')
+      })
+    })
+    detail_anime.genre = genre;
+    detail_anime.sinposis = $(".single-info.bixbox .desc.mindes").text().trim();
+
+    const popular = {
+      weekly: [],
+      monthly: [],
+      alltime: []
+    }
+    $("#wpop-items .serieslist").each((i, el) => {
+      let key = '';
+      if(i === 0) {
+        key = 'weekly';
+      } else if(i === 1) {
+        key = 'monthly';
+      } else if(i === 2) {
+        key = 'alltime';
+      }
+
+      $(el).find('ul li').each((j, val) => {
+        popular[key].push({
+          title: $(val).find(".leftseries h4 a").text().trim(),
+          slug: $(val).find(".leftseries h4 a").attr('href'),
+          cover: $(val).find(".imgseries img").attr('data-lazy-src').replace('?resize=65,85', '')
+        }) 
+      })
+    });
+
+
+    const data = {
+      title,
+      released_at,
+      main_server,
+      list_server,
+      next,
+      prev,
+      episodes,
+      downloads,
+      detail_anime,
+      popular
+    }
+    res.send(data);
+  } catch (error) {
+    // Ganti User-Agent jika terjadi error
+    userAgentIndex = (userAgentIndex + 1) % userAgents.length;
+    options.headers['User-Agent'] = userAgents[userAgentIndex];
+
+    res.status(500).send({
+      index: userAgentIndex,
+      agent: userAgents[userAgentIndex],
+      message: error.message // Mengirim pesan error untuk debugging
+    });
+  }
+});  
 
 
 router.post('/search', async (req, res) => {
