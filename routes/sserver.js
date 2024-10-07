@@ -5,6 +5,7 @@ const cheerio = require('cheerio')
 var request = require('request')
 const zlib = require('zlib')
 const jsdom = require('jsdom')
+const https = require('https');
 
 const BASEURL = 'https://api.scraperapi.com/?api_key=6bfa7c860fb506b663c33ec60132cae1&url='
 
@@ -17,9 +18,11 @@ var options = {
   url: null,
   withCredentials: true,
   headers: {
-    'User-Agent': userAgents[userAgentIndex],
-    'Referer': 'https://www.google.com/',
-  }
+    'User-Agent': userAgents[userAgentIndex]
+  },
+  httpsAgent: new https.Agent({
+    rejectUnauthorized: false,  // Menonaktifkan validasi SSL
+  })
 }  
 
 router.get('/home', async (req, res) => {
