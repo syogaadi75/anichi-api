@@ -82,6 +82,51 @@ router.get('/home', async (req, res) => {
   }
 }); 
 
+router.get('/video', async (req, res) => {
+  try { 
+    options.url = `https://samehadaku.today/blue-lock-season-2-episode-1-sub-indonesia`;
+
+    // Menggunakan User-Agent saat ini
+    options.headers['User-Agent'] = userAgents[userAgentIndex];
+
+    const base = await axios.request(options);
+    const $ = cheerio.load(base.data);
+    
+    let mainServer = $("#embed_holder #pembed iframe").attr('data-lazy-src');
+    let listServer = [];
+    $(".item.video-nav .mobius select option").each((i, el) => {
+      if($(el).attr('value') != '') { 
+        let base64Value = $(el).attr('value'); 
+        let decodedValue = atob(base64Value); 
+        const regex = /src="([^"]+)"/;
+        const match = decodedValue.match(regex);
+        let iframeSrc = match ? match[1] : null;
+
+        listServer.push({
+          server: $(el).text().trim(),
+          src: iframeSrc
+        });
+      }
+    });
+
+    const data = {
+      mainServer,
+      listServer
+    }
+    res.send(data);
+  } catch (error) {
+    // Ganti User-Agent jika terjadi error
+    userAgentIndex = (userAgentIndex + 1) % userAgents.length;
+    options.headers['User-Agent'] = userAgents[userAgentIndex];
+
+    res.status(500).send({
+      index: userAgentIndex,
+      agent: userAgents[userAgentIndex],
+      message: error.message // Mengirim pesan error untuk debugging
+    });
+  }
+}); 
+
 router.get('/v2/home', async (req, res) => {
   try { 
     options.url = `https://s1.nontonanimeid.boats?__cf_chl_rt_tk=_e0TSt3bOpije8xhykE4sfPorqqktt9UOXpzSm4AemU-1728280855-0.0.1.1-7124`;
