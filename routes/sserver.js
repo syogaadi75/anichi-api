@@ -10,7 +10,6 @@ const chromium = require('@sparticuz/chromium-min')
 const puppeteer = require('puppeteer-core'); 
 const path = require('path')
 
-
 const BASEURL = 'https://api.scraperapi.com/?api_key=6bfa7c860fb506b663c33ec60132cae1&url='
 
 
@@ -94,7 +93,8 @@ router.get('/home', async (req, res) => {
         popular[key].push({
           title: $(val).find(".leftseries h4 a").text().trim(),
           slug: $(val).find(".leftseries h4 a").attr('href'),
-          cover: $(val).find(".imgseries img").attr('data-lazy-src').replace('?resize=65,85', '')
+          cover: $(val).find(".imgseries img").attr('data-lazy-src').replace('?resize=65,85', ''),
+          rating: $(val).find(".numscore").text().trim()
         }) 
       })
     });
@@ -205,7 +205,8 @@ router.get('/search', async (req, res) => {
         popular[key].push({
           title: $(val).find(".leftseries h4 a").text().trim(),
           slug: $(val).find(".leftseries h4 a").attr('href'),
-          cover: $(val).find(".imgseries img").attr('src')?.replace('?resize=65,85', '')
+          cover: $(val).find(".imgseries img").attr('src')?.replace('?resize=65,85', ''),
+          rating: $(val).find(".numscore").text().trim()
         }) 
       })
     });
@@ -299,7 +300,8 @@ router.get('/detail', async (req, res) => {
         popular[key].push({
           title: $(val).find(".leftseries h4 a").text().trim(),
           slug: $(val).find(".leftseries h4 a").attr('href'),
-          cover: $(val).find(".imgseries img").attr('data-lazy-src').replace('?resize=65,85', '')
+          cover: $(val).find(".imgseries img").attr('data-lazy-src').replace('?resize=65,85', ''),
+          rating: $(val).find(".numscore").text().trim()
         }) 
       })
     });
@@ -484,7 +486,8 @@ router.get('/video', async (req, res) => {
         popular[key].push({
           title: $(val).find(".leftseries h4 a").text().trim(),
           slug: $(val).find(".leftseries h4 a").attr('href'),
-          cover: $(val).find(".imgseries img").attr('data-lazy-src').replace('?resize=65,85', '')
+          cover: $(val).find(".imgseries img").attr('data-lazy-src').replace('?resize=65,85', ''),
+          rating: $(val).find(".numscore").text().trim()
         }) 
       })
     });
