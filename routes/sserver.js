@@ -88,20 +88,22 @@ router.get('/v2/home', async (req, res) => {
       console.log(...args);
     });
 
-    const animes = await page.evaluate(() => {
-      const data = []
-      document.querySelectorAll('#postbaru .misha_posts_wrap article').forEach((el) => {
-        let slug = el.querySelector('a').getAttribute('href');
-        data.push({
-          slug,
-          title: el.querySelector('h3.title').textContent.trim(),
-          episode: el.querySelector('.types.episodes').textContent.trim(),
-          cover: el.querySelector('img').getAttribute('src')
-        });
-      });
-      return data
-    });
-    res.send(animes);
+    // const animes = await page.evaluate(() => {
+    //   const data = []
+    //   document.querySelectorAll('#postbaru .misha_posts_wrap article').forEach((el) => {
+    //     let slug = el.querySelector('a').getAttribute('href');
+    //     data.push({
+    //       slug,
+    //       title: el.querySelector('h3.title').textContent.trim(),
+    //       episode: el.querySelector('.types.episodes').textContent.trim(),
+    //       cover: el.querySelector('img').getAttribute('src')
+    //     });
+    //   });
+    //   return data
+    // });
+    const body = await page.evaluate(() => document.body.innerHTML);
+    res.send(body);
+    // res.send(page);
   } catch (error) { 
     res.status(500).send({ 
       message: error.message // Mengirim pesan error untuk debugging
