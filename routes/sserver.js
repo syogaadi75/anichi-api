@@ -444,15 +444,20 @@ router.get('/video', async (req, res) => {
 
     const downloads = [];
     $(".bixbox.mctn .soraddlx.soradlg").each((i, el) => {
-      $(el).each((j, val) => {
-        let download = {
-          title: '',
-          servers: []
-        }
-        if(j === 0) {
-          download.title = $(val).find('h3').text().trim();
-        }
+      let download = {
+        title: '',
+        servers: []
+      };
+
+      // Mendapatkan judul download dari h3
+      download.title = $(el).find('h3').text().trim();
+
+      // Mendapatkan data link berdasarkan resolusi (360p, 480p, 720p, 1080p, dll)
+      $(el).find('.soraurlx').each((j, val) => {
+        let resolution = $(val).find('strong').text().trim(); // Mengambil resolusi
         let links = [];
+
+        // Mendapatkan semua link download yang tersedia di bawah resolusi tersebut
         $(val).find('a').each((k, value) => {
           links.push({
             name: $(value).text().trim(),
@@ -460,14 +465,16 @@ router.get('/video', async (req, res) => {
           });
         });
 
+        // Menyimpan resolusi dan link ke dalam servers
         download.servers.push({
-          resolution: $(val).find('strong').text().trim(),
-          links
-        })
-
-        downloads.push(download);
+          resolution: resolution,
+          links: links
+        });
       });
-    }); 
+
+      // Push data ke array downloads
+      downloads.push(download);
+    });
 
     const detail_anime = {};
     detail_anime.slug = detail_anime_slug;
