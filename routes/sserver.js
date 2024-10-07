@@ -44,7 +44,7 @@ var options = {
 router.get('/home', async (req, res) => {
   try {
     let animes = [];
-    options.url = `https://s1.nontonanimeid.boats`;
+    options.url = `https://samehadaku.today`;
 
     // Menggunakan User-Agent saat ini
     options.headers['User-Agent'] = userAgents[userAgentIndex];
@@ -52,13 +52,19 @@ router.get('/home', async (req, res) => {
     const base = await axios.request(options);
     const $ = cheerio.load(base.data);
     
-    $('#postbaru .misha_posts_wrap article').each((i, el) => {
+    $('.listupd.normal .excstf article').each((i, el) => {
       let slug = $(el).find('a').attr('href');
+      let cover = '';
+      $('img').each((j, val) => {
+        if(!$(val).attr('src').includes('data:image')) {
+          cover = $(val).attr('src');
+        }
+      })
       animes.push({
         slug,
-        title: $(el).find('h3.title').text().trim(),
-        episode: $(el).find('.types.episodes').text().trim(),
-        cover: $(el).find('img').attr('src')
+        title: $(el).find('.tt').text().trim(),
+        episode: $(el).find('.bt .epx').text().trim(),
+        cover
       });
     });
 
@@ -74,11 +80,11 @@ router.get('/home', async (req, res) => {
       message: error.message // Mengirim pesan error untuk debugging
     });
   }
-});
+}); 
 
 router.get('/v2/home', async (req, res) => {
   try { 
-    options.url = `https://s1.nontonanimeid.boats`;
+    options.url = `https://s1.nontonanimeid.boats?__cf_chl_rt_tk=_e0TSt3bOpije8xhykE4sfPorqqktt9UOXpzSm4AemU-1728280855-0.0.1.1-7124`;
 
     const browser = await getBrowser()
     const page = await browser.newPage() 
