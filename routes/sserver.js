@@ -6,7 +6,7 @@ var request = require('request')
 const zlib = require('zlib')
 const jsdom = require('jsdom')
 
-const BASEURL = 'https://s1.nontonanimeid.boats'
+const BASEURL = 'https://api.scraperapi.com/?api_key=6bfa7c860fb506b663c33ec60132cae1&url='
 
 // axios.defaults.validateStatus = () => true
 const userAgents = [
@@ -15,16 +15,12 @@ const userAgents = [
 let userAgentIndex = 0;
 var options = {
   url: null,
-  withCredentials: true,
-  headers: {
-    'User-Agent': userAgents[userAgentIndex]
-  }
 }  
 
 router.get('/home', async (req, res) => {
   try {
     let animes = []
-    options.url = `${BASEURL}`
+    options.url = `https://s1.nontonanimeid.boats`
     const base = await axios.request(options)
     const $ = cheerio.load(base.data)
     $('#postbaru .misha_posts_wrap article').each((i, el) => {
