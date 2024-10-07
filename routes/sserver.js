@@ -11,46 +11,57 @@ const BASEURL = 'https://api.scraperapi.com/?api_key=6bfa7c860fb506b663c33ec6013
 
 // axios.defaults.validateStatus = () => true
 const userAgents = [
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+  // Kamu bisa menambahkan lebih banyak User-Agent ke dalam array ini
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:117.0) Gecko/20100101 Firefox/117.0',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36',
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Mobile/15E148 Safari/604.1'
 ];
 let userAgentIndex = 0;
+
 var options = {
   url: null,
   withCredentials: true,
   headers: {
     'User-Agent': userAgents[userAgentIndex]
-  },
-  httpsAgent: new https.Agent({
-    rejectUnauthorized: false,  // Menonaktifkan validasi SSL
-  })
-}  
+  }
+};
 
 router.get('/home', async (req, res) => {
   try {
-    let animes = []
-    options.url = `https://s1.nontonanimeid.boats`
-    const base = await axios.request(options)
-    const $ = cheerio.load(base.data)
+    let animes = [];
+    options.url = `https://s1.nontonanimeid.boats`;
+
+    // Menggunakan User-Agent saat ini
+    options.headers['User-Agent'] = userAgents[userAgentIndex];
+
+    const base = await axios.request(options);
+    const $ = cheerio.load(base.data);
+    
     $('#postbaru .misha_posts_wrap article').each((i, el) => {
-      let slug = $(el).find('a').attr('href') 
+      let slug = $(el).find('a').attr('href');
       animes.push({
         slug,
         title: $(el).find('h3.title').text().trim(),
         episode: $(el).find('.types.episodes').text().trim(),
         cover: $(el).find('img').attr('src')
-      }) 
-    })
-    
-    res.send(animes)
+      });
+    });
+
+    res.send(animes);
   } catch (error) {
+    // Ganti User-Agent jika terjadi error
     userAgentIndex = (userAgentIndex + 1) % userAgents.length;
-    res.send({
+    options.headers['User-Agent'] = userAgents[userAgentIndex];
+
+    res.status(500).send({
       index: userAgentIndex,
       agent: userAgents[userAgentIndex],
-      message: error
-    })
+      message: error.message // Mengirim pesan error untuk debugging
+    });
   }
-})
+});
+
 
 router.post('/search', async (req, res) => {
   try {
