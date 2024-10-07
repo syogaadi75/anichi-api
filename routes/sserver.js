@@ -161,18 +161,12 @@ router.get('/search', async (req, res) => {
     const $ = cheerio.load(base.data);
     
     $('.listupd article').each((i, el) => {
-      let slug = $(el).find('a').attr('href');
-      let cover = '';
-      $('img').each((j, val) => {
-        if(!$(val).attr('src').includes('data:image')) {
-          cover = $(val).attr('src');
-        }
-      })
+      let slug = $(el).find('a').attr('href'); 
       animes.push({
         slug,
         title: $(el).find('.tt h2').text().trim(),
         episode: $(el).find('.bt .epx').text().trim(),
-        cover
+        cover: $(el).find('.limit img').attr('src')?.replace('?resize=247,350', '')
       });
     });
 
