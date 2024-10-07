@@ -256,7 +256,7 @@ router.get('/detail', async (req, res) => {
     detail_anime.rating = $(".bigcontent .rating").text().trim();
 
     $(".bigcontent .infox .info-content span").each(function() {
-      const key = $(this).find('b').text().replace(':', '').trim().toLowerCase();
+      const key = $(this).find('b').text().replace(':', '').replace(' ','_').trim().toLowerCase();
       $(this).find('b').remove(); 
       let value = $(this).text().trim(); 
 
