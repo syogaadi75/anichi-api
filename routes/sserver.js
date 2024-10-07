@@ -56,7 +56,7 @@ router.get('/get-url', async (req, res) => {
 router.get('/home', async (req, res) => {
   try {
     let animes = [];
-    options.url = `https://samehadaku.today`;
+    options.url = req.query.url;
 
     // Menggunakan User-Agent saat ini
     options.headers['User-Agent'] = userAgents[userAgentIndex];
@@ -103,9 +103,35 @@ router.get('/home', async (req, res) => {
       })
     });
 
+    const navigation = {
+      prev: {
+        status: false,
+        slug: ''
+      },
+      next: {
+        status: false,
+        slug: ''
+      }
+    }
+
+    $(".listupd.normal .hpage a").each((i, el) => {
+      if ($(el).text().includes('Previous')) {
+        navigation.prev = {
+          status: true,
+          slug: $(el).attr('href')
+        };
+      } else if ($(el).text().includes('Next')) {
+        navigation.next = {
+          status: true,
+          slug: $(el).attr('href')
+        };
+      }
+    })
+
     const data = {
       animes,
-      popular
+      popular,
+      navigation
     }
 
     res.send(data);
