@@ -381,10 +381,12 @@ router.get('/video', async (req, res) => {
         const match = decodedValue.match(regex);
         let iframeSrc = match ? match[1] : null;
 
-        list_server.push({
-          server: $(el).text().trim(),
-          src: iframeSrc
-        });
+        if(iframeSrc) {
+          list_server.push({
+            server: $(el).text().trim(),
+            src: iframeSrc
+          });
+        }
       }
     });
 
