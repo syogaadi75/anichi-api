@@ -271,7 +271,7 @@ router.get('/detail', async (req, res) => {
     const $ = cheerio.load(base.data); 
 
     const detail_anime = {}; 
-    detail_anime.cover = $(".bigcontent .thumb img").attr('data-lazy-src')?.replace('?resize=247,350', '');
+    detail_anime.cover = $(".bigcontent .thumb img").attr('data-src')?.replace('?resize=247,350', '');
     detail_anime.title = $(".bigcontent .infox .entry-title").text().trim();
     detail_anime.information = $(".bigcontent .infox .ninfo .alter").text().trim();
     detail_anime.rating = $(".bigcontent .rating").text().trim();
@@ -329,7 +329,7 @@ router.get('/detail', async (req, res) => {
         popular[key].push({
           title: $(val).find(".leftseries h4 a").text().trim(),
           slug: $(val).find(".leftseries h4 a").attr('href'),
-          cover: $(val).find(".imgseries img").attr('data-lazy-src')?.replace('?resize=65,85', ''),
+          cover: $(val).find(".imgseries img").attr('data-src')?.replace('?resize=65,85', ''),
           rating: $(val).find(".numscore").text().trim(),
           genres: $(val).find('.leftseries span a').map((i, el) => ({
                     text: $(el).text().trim(),
@@ -371,7 +371,7 @@ router.get('/video', async (req, res) => {
     const title = $(".item.meta .lm h1.entry-title").text().trim();
     const released_at = $(".item.meta .lm .year .updated").text().trim();
     
-    let main_server = $("#embed_holder #pembed iframe").attr('data-lazy-src');
+    let main_server = $("#embed_holder #pembed iframe").attr('data-src');
     let list_server = [];
     $(".item.video-nav .mobius select option").each((i, el) => {
       if($(el).attr('value') != '') { 
@@ -429,7 +429,7 @@ router.get('/video', async (req, res) => {
     const formattedText = text.replace(ongoingText + ' - ', ' - ').trim();
 
 
-    episodes.head.cover = $(".headlist .thumb img").attr('data-lazy-src')?.replace('?resize=84,98', '');
+    episodes.head.cover = $(".headlist .thumb img").attr('data-src')?.replace('?resize=84,98', '');
     episodes.head.title = $(".headlist .det h2 a").text().trim();
     episodes.head.information = `${ongoingText} ${formattedText}`.replace(' - ?', ' 1');
 
@@ -438,7 +438,7 @@ router.get('/video', async (req, res) => {
         slug: $(el).find('a').attr('href'),
         title: $(el).find('.playinfo h3').text().trim(),
         released_at: $(el).find('.playinfo span').text().trim(),
-        cover: $(el).find('.thumbnel img').attr('data-lazy-src')?.replace('?resize=130,130', '')
+        cover: $(el).find('.thumbnel img').attr('data-src')?.replace('?resize=130,130', '')
       })
     });
 
@@ -478,7 +478,7 @@ router.get('/video', async (req, res) => {
 
     const detail_anime = {};
     detail_anime.slug = detail_anime_slug;
-    detail_anime.cover = $(".single-info.bixbox .thumb img").attr('data-lazy-src')?.replace('?resize=247,350', '');
+    detail_anime.cover = $(".single-info.bixbox .thumb img").attr('data-src')?.replace('?resize=247,350', '');
     detail_anime.title = $(".single-info.bixbox .infox .infolimit h2").text().trim();
     detail_anime.information = $(".single-info.bixbox .infox .infolimit span").text().trim();
     detail_anime.rating = $(".single-info.bixbox .infox .rating strong").text().trim();
@@ -526,7 +526,7 @@ router.get('/video', async (req, res) => {
         popular[key].push({
           title: $(val).find(".leftseries h4 a").text().trim(),
           slug: $(val).find(".leftseries h4 a").attr('href'),
-          cover: $(val).find(".imgseries img").attr('data-lazy-src')?.replace('?resize=65,85', ''),
+          cover: $(val).find(".imgseries img").attr('data-src')?.replace('?resize=65,85', ''),
           rating: $(val).find(".numscore").text().trim(),
           genres: $(val).find('.leftseries span a').map((i, el) => ({
                     text: $(el).text().trim(),
