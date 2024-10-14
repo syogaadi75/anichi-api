@@ -371,7 +371,7 @@ router.get('/video', async (req, res) => {
     const title = $(".item.meta .lm h1.entry-title").text().trim();
     const released_at = $(".item.meta .lm .year .updated").text().trim();
     
-    let main_server = $("#embed_holder #pembed iframe").attr('data-src');
+    let main_server = $("#embed_holder #pembed iframe").attr('src');
     let list_server = [];
     $(".item.video-nav .mobius select option").each((i, el) => {
       if($(el).attr('value') != '') { 
