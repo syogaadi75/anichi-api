@@ -167,7 +167,7 @@ router.get('/search', async (req, res) => {
         slug,
         title: $(el).find('.tt h2').text().trim(),
         episode: $(el).find('.bt .epx').text().trim(),
-        cover: $(el).find('.limit img').attr('src')?.replace('?resize=247,350', '')
+        cover: $(el).find('.limit img').attr('data-src')?.replace('?resize=247,350', '')
       });
     });
 
