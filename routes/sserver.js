@@ -66,10 +66,11 @@ router.get('/home', async (req, res) => {
     
     $('.listupd.normal .excstf article').each((i, el) => {
       let slug = $(el).find('a').attr('href');
+      let title = $(el).find(".inf h2 a").text().trim();
       animes.push({
         slug,
-        title: $(el).find('.tt h2').text().trim(),
-        episode: $(el).find('.bt .epx').text().trim(),
+        title: (title.match(/^(.*?)(Season|Episode)/) || [])[1]?.trim() || title,
+        episode: title.match(/Episode (\d+)/)[1],
         cover: $(el).find('img').attr('data-src')?.replace('?resize=247,350', '')
       });
     }); 
@@ -94,7 +95,7 @@ router.get('/home', async (req, res) => {
           title: $(val).find(".leftseries h4 a").text().trim(),
           slug: $(val).find(".leftseries h4 a").attr('href'),
           cover: $(val).find(".imgseries img").attr('data-src')?.replace('?resize=65,85', ''),
-          rating: $(val).find(".numscore").text().trim(),
+          rating: $(val).find(".numscore").text().trim() || '-',
           genres: $(val).find('.leftseries span a').map((i, el) => ({
                     text: $(el).text().trim(),
                     slug: $(el).attr('href')
