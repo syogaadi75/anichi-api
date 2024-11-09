@@ -231,7 +231,7 @@ router.get('/search', async (req, res) => {
         popular[key].push({
           title: $(val).find(".leftseries h4 a").text().trim(),
           slug: $(val).find(".leftseries h4 a").attr('href'),
-          cover: $(val).find(".imgseries img").attr('src')?.replace('?resize=65,85', ''),
+          cover: $(val).find(".imgseries img").attr('data-src')?.replace('?resize=65,85', ''),
           rating: $(val).find(".numscore").text().trim(),
           genres: $(val).find('.leftseries span a').map((i, el) => ({
                     text: $(el).text().trim(),
