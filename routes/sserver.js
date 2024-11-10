@@ -67,10 +67,11 @@ router.get('/home', async (req, res) => {
     $('.listupd.normal .excstf article').each((i, el) => {
       let slug = $(el).find('a').attr('href');
       let title = $(el).find(".inf h2 a").text().trim();
+      let match = title.match(/Episode (\d+)/);
       animes.push({
         slug,
-        title: (title.match(/^(.*?)(Season|Episode)/) || [])[1]?.trim() || title,
-        episode: title.match(/Episode (\d+)/)[1],
+        title: title.split(" Episode ")[0].trim(),
+        episode: match ? match[1] : '-',
         cover: $(el).find('img').attr('data-src')?.replace('?resize=247,350', '')
       });
     }); 
